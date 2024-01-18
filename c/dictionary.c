@@ -1,8 +1,8 @@
 #include <stdio.h>
-typedef struct {
+typedef struct Dictionary {
     char* value;
-    Dictionary* swap;
-    Dictionary* next;
+    struct Dictionary* swap;  
+    struct Dictionary* next;  
 } Dictionary;
 //---- Mehrez
 
