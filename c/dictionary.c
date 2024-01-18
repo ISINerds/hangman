@@ -69,9 +69,18 @@ Words parser(char* path){
     fclose(file);
     return words;
 }
+
+void test_parser(){
+    Words words = parser("../words.txt");
+    for(int i=0;i<words.wordsArraySize;i++){
+        printf("%d-%s \n",i+1,words.wordsArray[i]);
+    }
+    freeWordsArray(words);
+}
+
 //---- N3dhir
 
 int main(){
-    
+
     return 0;
 }
