@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 typedef struct Dictionary {
-    char* value;
+    char value;
     struct Dictionary* swap;  
     struct Dictionary* next;  
 } Dictionary;
@@ -70,17 +70,91 @@ Words parser(char* path){
     return words;
 }
 
-void test_parser(){
+void testParser(){
     Words words = parser("../words.txt");
     for(int i=0;i<words.wordsArraySize;i++){
         printf("%d-%s \n",i+1,words.wordsArray[i]);
     }
     freeWordsArray(words);
 }
+Dictionary* createNode(char value){
+    Dictionary* node = (Dictionary*)malloc(sizeof(Dictionary));
+    if(node){
+            node->value = value;
+            node->swap = NULL;
+            node->next=NULL;
+    }
+    return node;
+}
 
+Dictionary* addWord(Dictionary* dictionary,char * word){
+    if(*word!='\0'){
+        printf("current = %c\n",*word);
+        if(dictionary==NULL){
+            dictionary = createNode(*word);
+            printf("test1");
+            dictionary->next = addWord(dictionary->next,word+1);
+            return dictionary;
+        }
+        else if(dictionary->value < *word){
+            printf("test2");
+            dictionary->swap = addWord(dictionary->swap,word);
+            return dictionary;
+        }
+        else if(dictionary->value == *word){
+            printf("test3");
+            dictionary->next = addWord(dictionary->next,word+1);
+            return dictionary;
+        }
+        else if(dictionary->value > *word){
+            Dictionary* node = (Dictionary*)malloc(sizeof(Dictionary));
+            if(node){
+                    node->value = *word;
+                    node->swap = dictionary;
+                    node->next=NULL;
+            }
+            dictionary = node;
+            printf("test4");
+            dictionary->next = addWord(dictionary->next,word+1);
+            return dictionary;
+        }
+    }
+
+    else{
+        if(dictionary == NULL){
+            printf("test5");
+            dictionary = createNode('\0');
+            return dictionary;
+        }
+        else{
+            dictionary->swap = addWord(dictionary->swap,word);
+            return dictionary;
+            printf("test6");
+        }
+    }
+}
+
+void displayDictionary(Dictionary* dic){
+    if (dic != NULL) {
+        printf("%c ", dic->value);
+        displayDictionary(dic->next);
+        displayDictionary(dic->swap);
+    }
+}
+Dictionary* AddAll(Dictionary* dictionary, char * path){
+    Words words = parser(path);
+    // I will add exixts function ( I will not add the existing words)
+    for(int i=0;i<words.wordsArraySize;i++){
+        dictionary = addWord(dictionary,words.wordsArray[i]);
+    }
+    freeWordsArray(words);
+    return dictionary;
+}
 //---- N3dhir
 
 int main(){
-
+    Dictionary* dictionary = NULL;
+    dictionary = AddAll(dictionary,"C:\\Users\\Mehrez\\hangman\\words.txt");
+    displayDictionary(dictionary);
     return 0;
 }
