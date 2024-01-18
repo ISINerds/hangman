@@ -70,7 +70,7 @@ Words parser(char* path){
     return words;
 }
 
-void test_parser(){
+void testParser(){
     Words words = parser("../words.txt");
     for(int i=0;i<words.wordsArraySize;i++){
         printf("%d-%s \n",i+1,words.wordsArray[i]);
