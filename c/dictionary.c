@@ -89,20 +89,16 @@ Dictionary* createNode(char value){
 
 Dictionary* addWord(Dictionary* dictionary,char * word){
     if(*word!='\0'){
-        printf("current = %c\n",*word);
         if(dictionary==NULL){
             dictionary = createNode(*word);
-            printf("test1");
             dictionary->next = addWord(dictionary->next,word+1);
             return dictionary;
         }
         else if(dictionary->value < *word){
-            printf("test2");
             dictionary->swap = addWord(dictionary->swap,word);
             return dictionary;
         }
         else if(dictionary->value == *word){
-            printf("test3");
             dictionary->next = addWord(dictionary->next,word+1);
             return dictionary;
         }
@@ -114,7 +110,6 @@ Dictionary* addWord(Dictionary* dictionary,char * word){
                     node->next=NULL;
             }
             dictionary = node;
-            printf("test4");
             dictionary->next = addWord(dictionary->next,word+1);
             return dictionary;
         }
@@ -122,14 +117,12 @@ Dictionary* addWord(Dictionary* dictionary,char * word){
 
     else{
         if(dictionary == NULL){
-            printf("test5");
             dictionary = createNode('\0');
             return dictionary;
         }
         else{
             dictionary->swap = addWord(dictionary->swap,word);
             return dictionary;
-            printf("test6");
         }
     }
 }
@@ -150,6 +143,7 @@ Dictionary* AddAll(Dictionary* dictionary, char * path){
     freeWordsArray(words);
     return dictionary;
 }
+
 //---- N3dhir
 
 int main(){
