@@ -144,11 +144,27 @@ Dictionary* AddAll(Dictionary* dictionary, char * path){
     return dictionary;
 }
 
+int exists(Dictionary* dictionary, char * word){
+    if(dictionary == NULL ){
+        return 0;
+    }
+    if(*word =='\0' && dictionary->value=='\0' ){
+        return 1 ;
+    }
+    if((*word =='\0' && dictionary->value!='\0') || (dictionary->value> *word) ){
+        return 0;
+    }
+    else if (dictionary->value < *word){
+        return exists(dictionary->swap,word);
+    }
+    else if(dictionary->value == *word){
+        return exists(dictionary->next,word+1);
+    }
+
+} 
 //---- N3dhir
 
 int main(){
-    Dictionary* dictionary = NULL;
-    dictionary = AddAll(dictionary,"C:\\Users\\Mehrez\\hangman\\words.txt");
-    displayDictionary(dictionary);
+    
     return 0;
 }
