@@ -73,7 +73,7 @@ Words parser(char* path){
 void testParser(){
     Words words = parser("../words.txt");
     for(int i=0;i<words.wordsArraySize;i++){
-        printf("%d-%s \n",i+1,words.wordsArray[i]);
+        // printf("%d-%s \n",i+1,words.wordsArray[i]);
     }
     freeWordsArray(words);
 }
@@ -89,20 +89,20 @@ Dictionary* createNode(char value){
 
 Dictionary* addWord(Dictionary* dictionary,char * word){
     if(*word!='\0'){
-        printf("current = %c\n",*word);
+        // printf("current = %c\n",*word);
         if(dictionary==NULL){
             dictionary = createNode(*word);
-            printf("test1");
+            // printf("test1");
             dictionary->next = addWord(dictionary->next,word+1);
             return dictionary;
         }
         else if(dictionary->value < *word){
-            printf("test2");
+            // printf("test2");
             dictionary->swap = addWord(dictionary->swap,word);
             return dictionary;
         }
         else if(dictionary->value == *word){
-            printf("test3");
+            // printf("test3");
             dictionary->next = addWord(dictionary->next,word+1);
             return dictionary;
         }
@@ -114,7 +114,7 @@ Dictionary* addWord(Dictionary* dictionary,char * word){
                     node->next=NULL;
             }
             dictionary = node;
-            printf("test4");
+            // printf("test4");
             dictionary->next = addWord(dictionary->next,word+1);
             return dictionary;
         }
@@ -122,14 +122,14 @@ Dictionary* addWord(Dictionary* dictionary,char * word){
 
     else{
         if(dictionary == NULL){
-            printf("test5");
+            // printf("test5");
             dictionary = createNode('\0');
             return dictionary;
         }
         else{
             dictionary->swap = addWord(dictionary->swap,word);
             return dictionary;
-            printf("test6");
+            // printf("test6");
         }
     }
 }
@@ -152,9 +152,34 @@ Dictionary* AddAll(Dictionary* dictionary, char * path){
 }
 //---- N3dhir
 
+void show(Dictionary *dic, char* word, int idx) {
+    if(!dic) return;
+    if(dic->value == '\0') {
+        printf("%s\n", word);
+    }
+    word[idx++] = dic->value;
+    show(dic->next, word, idx);
+    word[--idx] = '\0';
+    show(dic->swap, word, idx);
+}
+
+void showAll(Dictionary *dic) {
+    char* word = (char*) malloc(100 * sizeof(char));
+    show(dic, word, 0);
+    free(word);
+}
+
 int main(){
     Dictionary* dictionary = NULL;
-    dictionary = AddAll(dictionary,"C:\\Users\\Mehrez\\hangman\\words.txt");
-    displayDictionary(dictionary);
+    // dictionary = AddAll(dictionary,"../words.txt");
+    // displayDictionary(dictionary);
+    dictionary = addWord(dictionary, "ce");
+    dictionary = addWord(dictionary, "ci");
+    dictionary = addWord(dictionary, "ces");
+    dictionary = addWord(dictionary, "di");
+    dictionary = addWord(dictionary, "de");
+    dictionary = addWord(dictionary, "des");
+    // displayDictionary(dictionary);
+    showAll(dictionary);
     return 0;
 }
