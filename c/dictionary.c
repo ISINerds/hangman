@@ -74,7 +74,7 @@ Words parser(char* path){
 void testParser(){
     Words words = parser("../words.txt");
     for(int i=0;i<words.wordsArraySize;i++){
-        printf("%d-%s \n",i+1,words.wordsArray[i]);
+        // printf("%d-%s \n",i+1,words.wordsArray[i]);
     }
     freeWordsArray(words);
 }
@@ -173,7 +173,34 @@ char * randomWord(char * path){
 }
 //---- N3dhir
 
-int main(){
+void show(Dictionary *dic, char* word, int idx) {
+    if(!dic) return;
+    if(dic->value == '\0') {
+        printf("%s\n", word);
+    }
+    word[idx++] = dic->value;
+    show(dic->next, word, idx);
+    word[--idx] = '\0';
+    show(dic->swap, word, idx);
+}
 
+void showAll(Dictionary *dic) {
+    char* word = (char*) malloc(100 * sizeof(char));
+    show(dic, word, 0);
+    free(word);
+}
+
+int main(){
+    Dictionary* dictionary = NULL;
+    // dictionary = AddAll(dictionary,"../words.txt");
+    // displayDictionary(dictionary);
+    dictionary = addWord(dictionary, "ce");
+    dictionary = addWord(dictionary, "ci");
+    dictionary = addWord(dictionary, "ces");
+    dictionary = addWord(dictionary, "di");
+    dictionary = addWord(dictionary, "de");
+    dictionary = addWord(dictionary, "des");
+    // displayDictionary(dictionary);
+    showAll(dictionary);
     return 0;
 }
