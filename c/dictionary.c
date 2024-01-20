@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 typedef struct Dictionary {
     char value;
     struct Dictionary* swap;  
@@ -89,20 +90,16 @@ Dictionary* createNode(char value){
 
 Dictionary* addWord(Dictionary* dictionary,char * word){
     if(*word!='\0'){
-        // printf("current = %c\n",*word);
         if(dictionary==NULL){
             dictionary = createNode(*word);
-            // printf("test1");
             dictionary->next = addWord(dictionary->next,word+1);
             return dictionary;
         }
         else if(dictionary->value < *word){
-            // printf("test2");
             dictionary->swap = addWord(dictionary->swap,word);
             return dictionary;
         }
         else if(dictionary->value == *word){
-            // printf("test3");
             dictionary->next = addWord(dictionary->next,word+1);
             return dictionary;
         }
@@ -114,7 +111,6 @@ Dictionary* addWord(Dictionary* dictionary,char * word){
                     node->next=NULL;
             }
             dictionary = node;
-            // printf("test4");
             dictionary->next = addWord(dictionary->next,word+1);
             return dictionary;
         }
@@ -122,14 +118,12 @@ Dictionary* addWord(Dictionary* dictionary,char * word){
 
     else{
         if(dictionary == NULL){
-            // printf("test5");
             dictionary = createNode('\0');
             return dictionary;
         }
         else{
             dictionary->swap = addWord(dictionary->swap,word);
             return dictionary;
-            // printf("test6");
         }
     }
 }
@@ -149,6 +143,33 @@ Dictionary* AddAll(Dictionary* dictionary, char * path){
     }
     freeWordsArray(words);
     return dictionary;
+}
+
+int exists(Dictionary* dictionary, char * word){
+    if(dictionary == NULL ){
+        return 0;
+    }
+    if(*word =='\0' && dictionary->value=='\0' ){
+        return 1 ;
+    }
+    if((*word =='\0' && dictionary->value!='\0') || (dictionary->value> *word) ){
+        return 0;
+    }
+    else if (dictionary->value < *word){
+        return exists(dictionary->swap,word);
+    }
+    else if(dictionary->value == *word){
+        return exists(dictionary->next,word+1);
+    }
+
+} 
+char * randomWord(char * path){
+    srand(time(NULL));
+    Words words = parser(path);
+    char * result = (char*) malloc(sizeof(char*));
+    strcpy(result,words.wordsArray[rand() % words.wordsArraySize]);
+    freeWordsArray(words);
+    return result;
 }
 //---- N3dhir
 
