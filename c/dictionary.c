@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 typedef struct Dictionary {
     char value;
     struct Dictionary* swap;  
@@ -162,9 +163,17 @@ int exists(Dictionary* dictionary, char * word){
     }
 
 } 
+char * randomWord(char * path){
+    srand(time(NULL));
+    Words words = parser(path);
+    char * result = (char*) malloc(sizeof(char*));
+    strcpy(result,words.wordsArray[rand() % words.wordsArraySize]);
+    freeWordsArray(words);
+    return result;
+}
 //---- N3dhir
 
 int main(){
-    
+
     return 0;
 }
