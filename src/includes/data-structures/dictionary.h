@@ -1,83 +1,24 @@
+#pragma once
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
+#include "./../utils/words-handler.h"
 typedef struct Dictionary {
     char value;
     struct Dictionary* swap;  
     struct Dictionary* next;  
 } Dictionary;
 
-typedef struct {
-    char ** wordsArray;
-    int wordsArraySize;
-} Words;
-//---- Mehrez
-void freeWordsArray(Words words){
-    for (int i = 0; i < words.wordsArraySize; i++) {
-        free(words.wordsArray[i]);
-    }
-    free(words.wordsArray);
-}
+Dictionary* createNode(char value);
+Dictionary* addWord(Dictionary* dictionary,char * word);
+void displayDictionary(Dictionary* dic);
+Dictionary* AddAll(Dictionary* dictionary, char * path);
+int exists(Dictionary* dictionary, char * word);
+void showAll(Dictionary *dic);
+void visualize(Dictionary*  dic, char* path);
+int* searchLetter(Dictionary* dic, char* keyword , char letter);
+Dictionary* removeWord(Dictionary *dic, char * word);
 
-Words parser(char* path){
-
-    Words words;
-    words.wordsArraySize=0;
-    FILE *file = fopen(path, "r");
-    char word[100]; 
-
-    if (file == NULL) {
-        printf("ERROR : Could not open the file %s\n", path);
-        exit(EXIT_FAILURE);
-    }
-
-    // Count the words
-    while (fscanf(file, "%s", word) == 1) {
-        words.wordsArraySize++;
-    }
-
-    // Reset the file position to the beginning
-    fseek(file, 0, SEEK_SET);
-
-    // Allocate memory for the words array
-    words.wordsArray = (char **)malloc(words.wordsArraySize * sizeof(char *));
-    if (words.wordsArray == NULL) {
-        fclose(file);
-        printf("ERROR : Memory allocation failed\n");
-        exit(EXIT_FAILURE);
-    }
-
-    // Read each word again and store it in the words array
-    for (int i = 0; i < words.wordsArraySize; i++) {
-
-        if (fscanf(file, "%s", word) != 1) {
-            freeWordsArray(words);
-            fclose(file);
-            printf("ERROR : Reading words from the file failed \n");
-            exit(EXIT_FAILURE);
-        }
-
-        words.wordsArray[i] = (char *)malloc((strlen(word) + 1) * sizeof(char));
-        if (words.wordsArray[i] == NULL) {
-            freeWordsArray(words);
-            fclose(file);
-            printf("ERROR : Memory allocation failed\n");
-            exit(EXIT_FAILURE);
-        }
-        strcpy(words.wordsArray[i], word);
-    }
-    fclose(file);
-    return words;
-}
-
-void testParser(){
-    Words words = parser("../words.txt");
-    for(int i=0;i<words.wordsArraySize;i++){
-        // printf("%d-%s \n",i+1,words.wordsArray[i]);
-    }
-    freeWordsArray(words);
-}
 Dictionary* createNode(char value){
     Dictionary* node = (Dictionary*)malloc(sizeof(Dictionary));
     if(node){
@@ -135,9 +76,9 @@ void displayDictionary(Dictionary* dic){
         displayDictionary(dic->swap);
     }
 }
+
 Dictionary* AddAll(Dictionary* dictionary, char * path){
     Words words = parser(path);
-    // I will add exixts function ( I will not add the existing words)
     for(int i=0;i<words.wordsArraySize;i++){
         dictionary = addWord(dictionary,words.wordsArray[i]);
     }
@@ -161,17 +102,7 @@ int exists(Dictionary* dictionary, char * word){
     else if(dictionary->value == *word){
         return exists(dictionary->next,word+1);
     }
-
-} 
-char * randomWord(char * path){
-    srand(time(NULL));
-    Words words = parser(path);
-    char * result = (char*) malloc(sizeof(char*));
-    strcpy(result,words.wordsArray[rand() % words.wordsArraySize]);
-    freeWordsArray(words);
-    return result;
 }
-//---- N3dhir
 
 void show(Dictionary *dic, char* word, int idx) {
     if(!dic) return;
@@ -302,47 +233,4 @@ Dictionary* rmWord(Dictionary *dic, char * word, int index) {
 
 Dictionary* removeWord(Dictionary *dic, char * word) {
     return rmWord(dic, word, 0);
-}
-
-int main(){
-    Dictionary* dictionary = NULL;
-    // dictionary = AddAll(dictionary,"../words.txt");
-    // displayDictionary(dictionary);
-    dictionary = addWord(dictionary, "ce");
-    dictionary = addWord(dictionary, "ci");
-    dictionary = addWord(dictionary, "ces");
-    dictionary = addWord(dictionary, "di");
-    dictionary = addWord(dictionary, "de");
-    dictionary = addWord(dictionary, "des");
-    // dictionary = addWord(dictionary, "isissssiisiiisis");
-    // displayDictionary(dictionary);
-    // showAll(dictionary);
-
-    //visualize the graph
-    // visualize(dictionary, "graph.txt");
-
-    //search positions of a letter in a word
-    // int* arr = searchLetter(dictionary, "isissssiisiiisis", 's');
-    // if(arr != NULL) {
-    //     for(int i=0;i<strlen("isissssiisiiisis") && (arr[i] != -1);i++) {
-    //         printf("%d ", arr[i]);
-    //     }
-    // }
-    // else printf("sorry but the word doesn't exist in the dictionary!!");
-    // if(arr) free(arr);
-
-    //remove a word from the dictionary
-    // dictionary = removeWord(dictionary, "ces");
-    dictionary = removeWord(dictionary, "di");
-    // dictionary = removeWord(dictionary, "de");
-    dictionary = removeWord(dictionary, "c");
-    dictionary = removeWord(dictionary, "diii");
-    // dictionary = removeWord(dictionary, "ci");
-    // dictionary = removeWord(dictionary, "ce");
-    // dictionary = removeWord(dictionary, "des");
-    // dictionary = removeWord(dictionary, "ci");
-    dictionary = removeWord(dictionary, "cii");
-    visualize(dictionary, "graph.txt");
-
-    return 0;
 }
