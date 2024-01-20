@@ -245,6 +245,31 @@ void visualize(Dictionary*  dic, char* path){
     printf("Data written to the file successfully.\n");
 }
 
+int search(Dictionary *dic, char* keyword , char letter, int* positions , int indexInWord, int indexInArray) {
+    if(!dic) return 0;
+    if(dic-> value == '\0' && indexInWord == strlen(keyword)) {
+        return 1;
+    }
+    if(dic->value == keyword[indexInWord]) {
+        if(dic->value == letter) positions[indexInArray++] = indexInWord;
+        return search(dic->next, keyword, letter, positions, indexInWord+1, indexInArray);
+    }
+    else if(dic->value < keyword[indexInWord]) {
+        return search(dic->swap, keyword, letter, positions, indexInWord, indexInArray);
+    }
+    else return 0;
+
+}
+
+int* searchLetter(Dictionary* dic, char* keyword , char letter){
+    int * positions = (int*) malloc(strlen(keyword) * sizeof(int));
+    // initialize the positions array by -1
+    for(int i=0;i<strlen(keyword);i++) positions[i] = -1;
+    if(search(dic, keyword, letter, positions, 0, 0)) return positions;
+    free(positions);
+    return NULL;
+}
+
 int main(){
     Dictionary* dictionary = NULL;
     // dictionary = AddAll(dictionary,"../words.txt");
@@ -255,8 +280,23 @@ int main(){
     dictionary = addWord(dictionary, "di");
     dictionary = addWord(dictionary, "de");
     dictionary = addWord(dictionary, "des");
+    dictionary = addWord(dictionary, "isissssiisiiisis");
     // displayDictionary(dictionary);
     // showAll(dictionary);
+
+    //visualize the graph
     visualize(dictionary, "graph.txt");
+
+    //search positions of a letter in a word
+    int* arr = searchLetter(dictionary, "isissssiisiiisis", 's');
+    if(arr != NULL) {
+        for(int i=0;i<strlen("isissssiisiiisis") && (arr[i] != -1);i++) {
+            printf("%d ", arr[i]);
+        }
+    }
+    else printf("sorry but the word doesn't exist in the dictionary!!");
+    if(arr) free(arr);
+
+
     return 0;
 }
