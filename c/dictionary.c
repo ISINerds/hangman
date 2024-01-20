@@ -169,6 +169,61 @@ void showAll(Dictionary *dic) {
     free(word);
 }
 
+void printDictionary (Dictionary* dic, char* id, int idx, FILE *file ) {
+    if(!dic) {
+        return;
+    }
+    // if(dic->swap != dic->next && (!dic->swap || !dic->next)) {
+        // only one of them is null
+        // if(!dic->swap) {
+            // fprintf(file, "null%s [shape=point]\n", id);
+            // fprintf(file, "%s -> null%s \n", id, id);
+        // }
+    // }
+    if(dic->value != '\0') fprintf(file, "%s[label=\"%c\"]\n",id, dic->value);
+    else fprintf(file, "%s[label=\"\\\\0\"]\n",id);
+    if(dic->next) {
+        fprintf(file, "%s -> %s0;\n", id, id);
+        id[idx++] = '0';
+        printDictionary(dic->next, id, idx, file);
+        id[--idx] = '\0';
+    }
+    if(dic->swap) {
+        fprintf(file, "%s -> %s1;\n", id, id);
+        fprintf(file, "{rank = same; %s;%s1;}\n", id, id);
+        id[idx++] = '1';
+        printDictionary(dic->swap, id, idx, file);
+        id[--idx] = '\0';
+    }
+}
+
+void visualize(Dictionary*  dic, char* path){
+    // Open a file for writing
+    FILE *file = fopen(path, "w");
+
+    // Check if the file was opened successfully
+    if (file == NULL) {
+        printf("ERROR : Could not open the file %s\n", path);
+        exit(EXIT_FAILURE);
+    }
+
+    char* id = (char*) malloc(100 * sizeof(char));
+    id[0] = '0';
+    // Write to the file
+    fprintf(file, "digraph {\n");
+    printDictionary(dic, id, 1, file);
+    fprintf(file, "}\n");
+
+    free(id);
+    // Close the file
+    fclose(file);
+
+    //generate the output.svg
+    system("cat graph.txt | dot -Tsvg > output.svg");
+
+    printf("Data written to the file successfully.\n");
+}
+
 int main(){
     Dictionary* dictionary = NULL;
     // dictionary = AddAll(dictionary,"../words.txt");
@@ -180,6 +235,7 @@ int main(){
     dictionary = addWord(dictionary, "de");
     dictionary = addWord(dictionary, "des");
     // displayDictionary(dictionary);
-    showAll(dictionary);
+    // showAll(dictionary);
+    visualize(dictionary, "graph.txt");
     return 0;
 }
