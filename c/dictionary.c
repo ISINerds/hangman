@@ -270,6 +270,40 @@ int* searchLetter(Dictionary* dic, char* keyword , char letter){
     return NULL;
 }
 
+Dictionary* rmWord(Dictionary *dic, char * word, int index) {
+    if(!dic) {
+        return NULL;
+    }
+    if(dic->value == '\0' && index == strlen(word)) {
+        Dictionary* tmp = dic->swap;
+        free(dic);
+        return tmp;
+    }
+    if(dic->value == word[index]) {
+        dic->next = rmWord(dic->next, word, index+1);
+        if(!dic->next) {
+            //remove this node
+            Dictionary* tmp = dic->swap;
+            free(dic);
+            return tmp;
+        }
+        else {
+            return dic;
+        }
+    }
+    else if(dic->value < word[index]) {
+        dic->swap = rmWord(dic->swap, word, index);
+        return dic;
+    }
+    else {
+        return dic;
+    }
+}
+
+Dictionary* removeWord(Dictionary *dic, char * word) {
+    return rmWord(dic, word, 0);
+}
+
 int main(){
     Dictionary* dictionary = NULL;
     // dictionary = AddAll(dictionary,"../words.txt");
@@ -280,23 +314,35 @@ int main(){
     dictionary = addWord(dictionary, "di");
     dictionary = addWord(dictionary, "de");
     dictionary = addWord(dictionary, "des");
-    dictionary = addWord(dictionary, "isissssiisiiisis");
+    // dictionary = addWord(dictionary, "isissssiisiiisis");
     // displayDictionary(dictionary);
     // showAll(dictionary);
 
     //visualize the graph
-    visualize(dictionary, "graph.txt");
+    // visualize(dictionary, "graph.txt");
 
     //search positions of a letter in a word
-    int* arr = searchLetter(dictionary, "isissssiisiiisis", 's');
-    if(arr != NULL) {
-        for(int i=0;i<strlen("isissssiisiiisis") && (arr[i] != -1);i++) {
-            printf("%d ", arr[i]);
-        }
-    }
-    else printf("sorry but the word doesn't exist in the dictionary!!");
-    if(arr) free(arr);
+    // int* arr = searchLetter(dictionary, "isissssiisiiisis", 's');
+    // if(arr != NULL) {
+    //     for(int i=0;i<strlen("isissssiisiiisis") && (arr[i] != -1);i++) {
+    //         printf("%d ", arr[i]);
+    //     }
+    // }
+    // else printf("sorry but the word doesn't exist in the dictionary!!");
+    // if(arr) free(arr);
 
+    //remove a word from the dictionary
+    // dictionary = removeWord(dictionary, "ces");
+    dictionary = removeWord(dictionary, "di");
+    // dictionary = removeWord(dictionary, "de");
+    dictionary = removeWord(dictionary, "c");
+    dictionary = removeWord(dictionary, "diii");
+    // dictionary = removeWord(dictionary, "ci");
+    // dictionary = removeWord(dictionary, "ce");
+    // dictionary = removeWord(dictionary, "des");
+    // dictionary = removeWord(dictionary, "ci");
+    dictionary = removeWord(dictionary, "cii");
+    visualize(dictionary, "graph.txt");
 
     return 0;
 }
