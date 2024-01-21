@@ -63,7 +63,10 @@ Dictionary* addWord(Dictionary* dictionary,char * word){
             return dictionary;
         }
         else{
-            dictionary->swap = addWord(dictionary->swap,word);
+            Dictionary* temp = dictionary;
+            dictionary = createNode('\0');
+            dictionary->swap = temp;
+            // dictionary->swap = addWord(dictionary->swap,word);
             return dictionary;
         }
     }
@@ -71,7 +74,12 @@ Dictionary* addWord(Dictionary* dictionary,char * word){
 
 void displayDictionary(Dictionary* dic){
     if (dic != NULL) {
-        printf("%c ", dic->value);
+        if(dic->value!='\0'){
+            printf("%c ", dic->value);
+        }
+        else{
+            printf("%c",'#');
+        }
         displayDictionary(dic->next);
         displayDictionary(dic->swap);
     }
