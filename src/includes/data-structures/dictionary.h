@@ -62,11 +62,14 @@ Dictionary* addWord(Dictionary* dictionary,char * word){
             dictionary = createNode('\0');
             return dictionary;
         }
-        else{
+        else if(dictionary->value!='\0'){
             Dictionary* temp = dictionary;
             dictionary = createNode('\0');
             dictionary->swap = temp;
             // dictionary->swap = addWord(dictionary->swap,word);
+            return dictionary;
+        }
+        else {
             return dictionary;
         }
     }
