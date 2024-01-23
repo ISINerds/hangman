@@ -25,6 +25,6 @@ dictionary = addWord(dictionary, "ce");
     dictionary = addWord(dictionary, "siabfsd");
     dictionary = addWord(dictionary, "siabfsr");
     dictionary = addWord(dictionary, "siabfsrt");
-    visualize(dictionary, "graph.txt");
+    visualize(dictionary, "graph.dot");
     return 0;
 }

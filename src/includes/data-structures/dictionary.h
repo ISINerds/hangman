@@ -182,7 +182,7 @@ void visualize(Dictionary*  dic, char* path){
     fclose(file);
 
     //generate the output.svg
-    system("cat graph.txt | dot -Tsvg > output.svg");
+    system("dot -Tpng -o output.png graph.dot");
 
     printf("Data written to the file successfully.\n");
 }
