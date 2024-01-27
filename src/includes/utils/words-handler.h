@@ -74,7 +74,7 @@ void freeWordsArray(Words words){
 char * randomWord(char * path){
     srand(time(NULL));
     Words words = parser(path);
-    char * result = (char*) malloc(sizeof(char*));
+    char * result = (char*) malloc(100*sizeof(char));
     strcpy(result,words.wordsArray[rand() % words.wordsArraySize]);
     freeWordsArray(words);
     return result;

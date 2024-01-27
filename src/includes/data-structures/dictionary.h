@@ -9,12 +9,11 @@ typedef struct Dictionary {
     struct Dictionary* next;  
 } Dictionary;
 
-Dictionary* createNode(char value);
 Dictionary* addWord(Dictionary* dictionary,char * word);
 void displayDictionary(Dictionary* dic);
 Dictionary* AddAll(Dictionary* dictionary, char * path);
 int exists(Dictionary* dictionary, char * word);
-void showAll(Dictionary *dic);
+void showAllWords(Dictionary *dic);
 void visualize(Dictionary*  dic, char* path);
 int* searchLetter(Dictionary* dic, char* keyword , char letter);
 Dictionary* removeWord(Dictionary *dic, char * word);
@@ -126,7 +125,7 @@ void show(Dictionary *dic, char* word, int idx) {
     show(dic->swap, word, idx);
 }
 
-void showAll(Dictionary *dic) {
+void showAllWords(Dictionary *dic) {
     char* word = (char*) malloc(100 * sizeof(char));
     show(dic, word, 0);
     free(word);
