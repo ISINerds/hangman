@@ -1,522 +1,189 @@
-/*
-    WELCOME raylib EXAMPLES CONTRIBUTOR!
-
-    This is a basic template to anyone ready to contribute with some code example for the library,
-    here there are some guidelines on how to create an example to be included in raylib
-
-    1. File naming: <module>_<description> - Lower case filename, words separated by underscore,
-       no more than 3-4 words in total to describe the example. <module> referes to the primary
-       raylib module the example is more related with (code, shapes, textures, models, shaders, raudio).
-       i.e: core_input_multitouch, shapes_lines_bezier, shaders_palette_switch
-
-    2. Follow below template structure, example info should list the module, the short description
-       and the author of the example, twitter or github info could be also provided for the author.
-       Short description should also be used on the title of the window.
-
-    3. Code should be organized by sections:[Initialization]- [Update] - [Draw] - [De-Initialization]
-       Place your code between the dotted lines for every section, please don't mix update logic with drawing
-       and remember to unload all loaded resources.
-
-    4. Code should follow raylib conventions: https://github.com/raysan5/raylib/wiki/raylib-coding-conventions
-       Try to be very organized, using line-breaks appropiately.
-
-    5. Add comments to the specific parts of code the example is focus on.
-       Don't abuse with comments, try to be clear and impersonal on the comments.
-
-    6. Try to keep the example simple, under 300 code lines if possible. Try to avoid external dependencies.
-       Try to avoid defining functions outside the main(). Example should be as self-contained as possible.
-
-    7. About external resources, they should be placed in a [resources] folder and those resources
-       should be open and free for use and distribution. Avoid propietary content.
-
-    8. Try to keep the example simple but with a creative touch.
-       Simple but beautiful examples are more appealing to users!
-
-    9. In case of additional information is required, just come to raylib Discord channel: example-contributions
-
-    10. Have fun!
-
-    The following files should be updated when adding a new example, it's planned to create some
-    script to automatize this process but not available yet.
-
-     - raylib/examples/<category>/<category>_example_name.c
-     - raylib/examples/<category>/<category>_example_name.png
-     - raylib/examples/<category>/resources/*.*
-     - raylib/examples/Makefile
-     - raylib/examples/Makefile.Web
-     - raylib/examples/README.md
-     - raylib/projects/VS2022/examples/<category>_example_name.vcxproj
-     - raylib/projects/VS2022/raylib.sln
-     - raylib.com/common/examples.js
-     - raylib.com/examples/<category>/<category>_example_name.html
-     - raylib.com/examples/<category>/<category>_example_name.data
-     - raylib.com/examples/<category>/<category>_example_name.wasm
-     - raylib.com/examples/<category>/<category>_example_name.js
-*/
-
 /*******************************************************************************************
 *
-*   raylib [core] example - Basic window
+*   raylib [models] example - Detect basic 3d collisions (box vs sphere vs box)
 *
-*   Example originally created with raylib 4.5, last time updated with raylib 4.5
-*
-*   Example contributed by <user_name> (@<user_github>) and reviewed by Ramon Santamaria (@raysan5)
+*   Example originally created with raylib 1.3, last time updated with raylib 3.5
 *
 *   Example licensed under an unmodified zlib/libpng license, which is an OSI-certified,
 *   BSD-like license that allows static linking with closed source software
 *
-*   Copyright (c) 2023 <user_name> (@<user_github>)
+*   Copyright (c) 2015-2024 Ramon Santamaria (@raysan5)
 *
 ********************************************************************************************/
-
 #define RAYGUI_IMPLEMENTATION
 #include "includes/utils/src/raylib.h"
 #include "includes/utils/src/raygui.h"
-//----------------------------------------------------------------------------------
-// Controls Functions Declaration
-//----------------------------------------------------------------------------------
-float GuiVerticalSlider(Rectangle bounds, const char *textTop, const char *textBottom, float value, float minValue, float maxValue);
-float GuiVerticalSliderBar(Rectangle bounds, const char *textTop, const char *textBottom, float value, float minValue, float maxValue);
-float GuiVerticalSliderPro(Rectangle bounds, const char *textTop, const char *textBottom, float value, float minValue, float maxValue, int sliderHeight);
 
-bool GuiSliderOwning(Rectangle bounds, const char *textLeft, const char *textRight, float *value, float minValue, float maxValue, bool editMode);
-bool GuiSliderBarOwning(Rectangle bounds, const char *textLeft, const char *textRight, float *value, float minValue, float maxValue, bool editMode);
-bool GuiSliderProOwning(Rectangle bounds, const char *textLeft, const char *textRight, float *value, float minValue, float maxValue, int sliderWidth, bool editMode);
+#define textPadding 10
+#define borderRadius 0.1
+#define gap 10
+#define padding 5
+#define textSize 30
 
-bool GuiVerticalSliderOwning(Rectangle bounds, const char *textTop, const char *textBottom, float *value, float minValue, float maxValue, bool editMode);
-bool GuiVerticalSliderBarOwning(Rectangle bounds, const char *textTop, const char *textBottom, float *value, float minValue, float maxValue, bool editMode);
-bool GuiVerticalSliderProOwning(Rectangle bounds, const char *textTop, const char *textBottom, float *value, float minValue, float maxValue, int sliderHeight, bool editMode);
+const int screenWidth = 800;
+const int screenHeight = 450;
 
-//------------------------------------------------------------------------------------
-// Program main entry point
-//------------------------------------------------------------------------------------
-int main()
-{
-    // Initialization
-    //---------------------------------------------------------------------------------------
-    int screenWidth = 800;
-    int screenHeight = 450;
+//width and height for responsiveness
+int w, h;
+bool dropDown1 = false;
+bool dropDown2 = false;
+char* singlePlayerOptions = "Hangman;Guess The Word";
+char* twoPlayersOptions = "Dual Hangman;Sudden Death";
+int selectedOption = 0;
+char* difficultyOptions = "Easy;Medium;Hard";
+int selectedDifficulty = 0;
+// Define the camera to look into our 3d world
+// Camera camera = { { -5.0f, 10.0f, 10.0f }, { -5.0f, 1.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, 45.0f, 0 };
+Camera camera = { { -5.1f, 4.0f, 15.6f }, { -5.9f, 3.6f, -0.1f }, { 0.0f, 1.0f, 0.0f }, 45.0f, 0 };
+// hangman pieces number
+const int piecesNumber = 10;
+int nb = 0;
+// hangman pieces
+Vector3 hangmanPiecesPositions[11] = {{-0.3f, 0.3f, 0.8f}, {-2.0f, 2.7f, 0.9f}, {-1.0f, 5.0f, 0.9f}, {0.0f, 4.5f, 0.9f}, {0.0f, 4.2f, 0.9f}, {0.0f, 3.2f, 0.9f}, {0.5f, 3.2f, 0.9f}, {-0.5f, 3.2f, 0.9f}, {-0.2f, 2.2f, 0.9f}, {0.2f, 2.2f, 0.9f}};
+Vector3 hangmanPiecesSizes[11] = {{4.0f, 0.3f, 2.0f}, {0.2f, 4.5f, 0.2f}, {3.0f, 0.2f, 1.3f}, {0.1f, 0.8f, 0.2f}, {0.5f, 0.6f, 0.7f}, {0.8f, 1.4f, 0.7f}, {0.2f, 1.0f, 0.2f}, {0.2f, 1.0f, 0.2f}, {0.2f, 1.0f, 0.2f}, {0.2f, 1.0f, 0.2f}};
+// which page to display
+int pageNumber = 0;
 
-    InitWindow(screenWidth, screenHeight, "raygui - custom sliders");
+void welcomePage() {
+    int textWidth = MeasureText("Welcome To Hangman Game", w * 0.03);
+    DrawText("Welcome To Hangman Game", w / 2 - textWidth / 2, h * 0.1, w * 0.03, GRAY);
+    if(GuiButton((Rectangle){w / 2 - w * 0.2, h * 0.4 ,w * 0.4, h * 0.1},"1 Player Mode")) {
+        pageNumber = 1;
+    }
+    if(GuiButton((Rectangle){w / 2 - w * 0.2, h * 0.5 + 5 ,w * 0.4, h * 0.1},"2 Player Mode")) {
+        pageNumber = 4;
+    }
+    if(GuiButton((Rectangle){w / 2 - w * 0.2, h * 0.6 + 10 ,w * 0.4, h * 0.1},"Rankings")) {
+        pageNumber = 7;
+    }
+}
 
-    float value = 0.5f;
-    bool sliderEditMode = false;
-    bool vSliderEditMode = false;
-    bool vSliderBarEditMode = false;
+void singlePlayerPage() {
+    if(GuiButton((Rectangle){w / 2 - w * 0.2, h * 0.6 + 10 ,w * 0.4, h * 0.1},"Start") && !dropDown1 && !dropDown2) {
+        if(selectedOption == 0) {
+            pageNumber = 2;
+        }
+        else {
+            pageNumber = 3;
+        }
+    }
+    if(!dropDown1 && GuiDropdownBox((Rectangle){w / 2 - w * 0.2, h * 0.5 + 5 ,w * 0.4, h * 0.1}, difficultyOptions, &selectedDifficulty, dropDown2)) {
+        dropDown2 = !dropDown2;
+    }
+    if(GuiDropdownBox((Rectangle){w / 2 - w * 0.2, h * 0.4 ,w * 0.4, h * 0.1}, singlePlayerOptions, &selectedOption, dropDown1)) {
+        dropDown1 = !dropDown1;
+        // printf("%d %d\n", selectedOption, dropDown);
+    }
+    // if(GuiButton((Rectangle){w / 2 - w * 0.2, h * 0.4 ,w * 0.4, h * 0.1},"Hangman")) {
+    //     pageNumber = 2;
+    // }
+    // if(GuiButton((Rectangle){w / 2 - w * 0.2, h * 0.5 + 5 ,w * 0.4, h * 0.1},"Guess The Word")) {
+    //     pageNumber = 3;
+    // }
+}
 
-    SetTargetFPS(60);
-    //--------------------------------------------------------------------------------------
+void twoPlayersPage() {
+    if(GuiButton((Rectangle){w / 2 - w * 0.2, h * 0.5 + 5 ,w * 0.4, h * 0.1},"Start") && !dropDown1) {
+        if(selectedOption == 0) {
+            pageNumber = 5;
+        }
+        else {
+            pageNumber = 6;
+        }
+    }
+    if(GuiDropdownBox((Rectangle){w / 2 - w * 0.2, h * 0.4,w * 0.4, h * 0.1}, twoPlayersOptions, &selectedOption, dropDown1)) {
+        dropDown1 = !dropDown1;
+    }
+}
 
-    // Main game loop
-    while (!WindowShouldClose())    // Detect window close button or ESC key
-    {
-        // Update
-        //----------------------------------------------------------------------------------
-        // TODO: Implement required update logic
-        //----------------------------------------------------------------------------------
+void rankingsPage() {
+    if(GuiButton((Rectangle){w / 2 - w * 0.2, h * 0.4 ,w * 0.4, h * 0.1},"Not Implemented Yet")) {
+    }
+}
 
-        // Draw
-        //----------------------------------------------------------------------------------
-        BeginDrawing();
+void hangman() {
+    if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) nb++;
+        nb %= piecesNumber+1;
+    
+    if (IsKeyDown(KEY_UP)) camera.position.y +=0.1;
+    else if (IsKeyDown(KEY_DOWN)) camera.position.y-=0.1;
+    else if (IsKeyDown(KEY_RIGHT)) camera.position.z+=0.1;
+    else if (IsKeyDown(KEY_LEFT)) camera.position.z-=0.1;
+    else if (IsKeyDown(KEY_J)) camera.position.x+=0.1;
+    else if (IsKeyDown(KEY_K)) camera.position.x-=0.1;
+    if (IsKeyDown(KEY_W)) camera.target.y +=0.1;
+    else if (IsKeyDown(KEY_S)) camera.target.y-=0.1;
+    else if (IsKeyDown(KEY_D)) camera.target.z+=0.1;
+    else if (IsKeyDown(KEY_A)) camera.target.z-=0.1;
+    else if (IsKeyDown(KEY_R)) camera.target.x+=0.1;
+    else if (IsKeyDown(KEY_T)) camera.target.x-=0.1;
 
-            ClearBackground(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));
+    // if (IsKeyDown(KEY_UP)) hangmanPiecesPositions[nb].z+=0.1;
+    // else if (IsKeyDown(KEY_DOWN)) hangmanPiecesPositions[nb].z-=0.1;
+    // else if (IsKeyDown(KEY_RIGHT)) hangmanPiecesPositions[nb].x+=0.1;
+    // else if (IsKeyDown(KEY_LEFT)) hangmanPiecesPositions[nb].x-=0.1;
+    // else if (IsKeyDown(KEY_T)) hangmanPiecesPositions[nb].y+=0.1;
+    // else if (IsKeyDown(KEY_R)) hangmanPiecesPositions[nb].y-=0.1;
+    // printf("x y z: %f %f %f\n", hangmanPiecesPositions[nb].x, hangmanPiecesPositions[nb].y, hangmanPiecesPositions[nb].z);
+    // if (IsKeyDown(KEY_UP)) hangmanPiecesSizes[nb].z+=0.1;
+    // else if (IsKeyDown(KEY_DOWN)) hangmanPiecesSizes[nb].z-=0.1;
+    // else if (IsKeyDown(KEY_RIGHT)) hangmanPiecesSizes[nb].x+=0.1;
+    // else if (IsKeyDown(KEY_LEFT)) hangmanPiecesSizes[nb].x-=0.1;
+    // else if (IsKeyDown(KEY_T)) hangmanPiecesSizes[nb].y+=0.1;
+    // else if (IsKeyDown(KEY_R)) hangmanPiecesSizes[nb].y-=0.1;
+    // printf("x y z: %f %f %f\n", hangmanPiecesSizes[nb].x, hangmanPiecesSizes[nb].y, hangmanPiecesSizes[nb].z);
+    // printf("position: x y z; target: x y z %f %f %f %f %f %f\n", camera.position.x, camera.position.y, camera.position.z, camera.target.x, camera.target.y, camera.target.z);
+    // UpdateCamera(&camera, CAMERA_THIRD_PERSON);
+        // UpdateCamera(&camera, CAMERA_ORBITAL);
+        
+        BeginMode3D(camera);
 
-            if (vSliderEditMode || vSliderBarEditMode) GuiLock();
-            else GuiUnlock();
+        for(int i=0;i<nb;i++) {
+            DrawCube(hangmanPiecesPositions[i], hangmanPiecesSizes[i].x, hangmanPiecesSizes[i].y, hangmanPiecesSizes[i].z, GRAY);
+            DrawCubeWires(hangmanPiecesPositions[i], hangmanPiecesSizes[i].x, hangmanPiecesSizes[i].y, hangmanPiecesSizes[i].z, DARKGRAY);
+        }
+        
 
-            // raygui: controls drawing
-            //----------------------------------------------------------------------------------
-            GuiGroupBox((Rectangle){ 66, 24, 276, 312 }, "STANDARD");
-            GuiSlider((Rectangle){ 96, 48, 216, 16 }, TextFormat("%0.2f", value), NULL, &value, 0.0f, 1.0f);
-            value = GuiVerticalSlider((Rectangle){ 120, 120, 24, 192 }, TextFormat("%0.2f", value), NULL, value, 0.0f, 1.0f);
-            value = GuiVerticalSliderBar((Rectangle){ 264, 120, 24, 192 }, TextFormat("%0.2f", value), NULL, value, 0.0f, 1.0f);
 
-            GuiGroupBox((Rectangle){ 378, 24, 276, 312 }, "OWNING");
-            if (GuiSliderOwning((Rectangle){ 408, 48, 216, 16 }, NULL, TextFormat("%0.2f", value), &value, 0.0f, 1.0f, sliderEditMode)) sliderEditMode = !sliderEditMode;
-            if (GuiVerticalSliderOwning((Rectangle){ 432, 120, 24, 192 }, NULL, TextFormat("%0.2f", value), &value, 0.0f, 1.0f, vSliderEditMode)) vSliderEditMode = !vSliderEditMode;
-            if (GuiVerticalSliderBarOwning((Rectangle){ 576, 120, 24, 192 }, NULL, TextFormat("%0.2f", value), &value, 0.0f, 1.0f, vSliderBarEditMode)) vSliderBarEditMode = !vSliderBarEditMode;
-            //----------------------------------------------------------------------------------
+        
 
+        
+            DrawGrid(7, 1);        // Draw a grid
+
+        EndMode3D();
+        
+}
+
+
+
+void previewScreen() {
+    w = GetRenderWidth();
+    h = GetRenderHeight();
+    ClearBackground(RAYWHITE);
+    BeginDrawing();
+
+        // DrawText("Move player with cursors to collide", 220, 40, 20, GRAY);
+
+        //     // DrawFPS(10, 10);
+        //     hangman();
+            switch(pageNumber) {
+                case 0: welcomePage(); break;
+                case 1: singlePlayerPage(); break;
+                case 2: hangman(); break;
+                case 4: twoPlayersPage(); break;
+                case 7: rankingsPage(); break;
+            }
         EndDrawing();
-        //----------------------------------------------------------------------------------
+
+}
+
+int main(void) {    
+    SetConfigFlags(FLAG_WINDOW_RESIZABLE);
+    InitWindow(screenWidth, screenHeight, "Hangman");
+    SetTargetFPS(60);
+    while (!WindowShouldClose()) {
+        previewScreen();
     }
-
-    // De-Initialization
-    //--------------------------------------------------------------------------------------
-    CloseWindow();        // Close window and OpenGL context
-    //--------------------------------------------------------------------------------------
-
+    CloseWindow();
     return 0;
-}
-
-//------------------------------------------------------------------------------------
-// Controls Functions Definitions (local)
-//------------------------------------------------------------------------------------
-float GuiVerticalSliderPro(Rectangle bounds, const char *textTop, const char *textBottom, float value, float minValue, float maxValue, int sliderHeight)
-{
-    GuiState state = (GuiState)GuiGetState();
-
-    int sliderValue = (int)(((value - minValue)/(maxValue - minValue)) * (bounds.height - 2 * GuiGetStyle(SLIDER, BORDER_WIDTH)));
-
-    Rectangle slider = {
-        bounds.x + GuiGetStyle(SLIDER, BORDER_WIDTH) + GuiGetStyle(SLIDER, SLIDER_PADDING),
-        bounds.y + bounds.height - sliderValue,
-        bounds.width - 2*GuiGetStyle(SLIDER, BORDER_WIDTH) - 2*GuiGetStyle(SLIDER, SLIDER_PADDING),
-        0.0f,
-    };
-
-    if (sliderHeight > 0)        // Slider
-    {
-        slider.y -= sliderHeight/2;
-        slider.height = (float)sliderHeight;
-    }
-    else if (sliderHeight == 0)  // SliderBar
-    {
-        slider.y -= GuiGetStyle(SLIDER, BORDER_WIDTH);
-        slider.height = (float)sliderValue;
-    }
-    // Update control
-    //--------------------------------------------------------------------
-    if ((state != STATE_DISABLED) && !guiLocked)
-    {
-        Vector2 mousePoint = GetMousePosition();
-
-        if (CheckCollisionPointRec(mousePoint, bounds))
-        {
-            if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
-            {
-                state = STATE_PRESSED;
-
-                // Get equivalent value and slider position from mousePoint.x
-                float normalizedValue = (bounds.y + bounds.height - mousePoint.y - (float)(sliderHeight / 2)) / (bounds.height - (float)sliderHeight);
-                value = (maxValue - minValue) * normalizedValue + minValue;
-
-                if (sliderHeight > 0) slider.y = mousePoint.y - slider.height / 2;  // Slider
-                else if (sliderHeight == 0)                                          // SliderBar
-                {
-                    slider.y = mousePoint.y;
-                    slider.height = bounds.y + bounds.height - slider.y - GuiGetStyle(SLIDER, BORDER_WIDTH);
-                }
-            }
-            else state = STATE_FOCUSED;
-        }
-
-        if (value > maxValue) value = maxValue;
-        else if (value < minValue) value = minValue;
-    }
-
-
-    // Bar limits check
-    if (sliderHeight > 0)        // Slider
-    {
-        if (slider.y < (bounds.y + GuiGetStyle(SLIDER, BORDER_WIDTH))) slider.y = bounds.y + GuiGetStyle(SLIDER, BORDER_WIDTH);
-        else if ((slider.y + slider.height) >= (bounds.y + bounds.height)) slider.y = bounds.y + bounds.height - slider.height - GuiGetStyle(SLIDER, BORDER_WIDTH);
-    }
-    else if (sliderHeight == 0)  // SliderBar
-    {
-        if (slider.y < (bounds.y + GuiGetStyle(SLIDER, BORDER_WIDTH)))
-        {
-            slider.y = bounds.y + GuiGetStyle(SLIDER, BORDER_WIDTH);
-            slider.height = bounds.height - 2*GuiGetStyle(SLIDER, BORDER_WIDTH);
-        }
-    }
-
-    //--------------------------------------------------------------------
-    // Draw control
-    //--------------------------------------------------------------------
-    GuiDrawRectangle(bounds, GuiGetStyle(SLIDER, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(SLIDER, BORDER + (state*3))), guiAlpha), Fade(GetColor(GuiGetStyle(SLIDER, (state != STATE_DISABLED)?  BASE_COLOR_NORMAL : BASE_COLOR_DISABLED)), guiAlpha));
-
-    // Draw slider internal bar (depends on state)
-    if ((state == STATE_NORMAL) || (state == STATE_PRESSED)) GuiDrawRectangle(slider, 0, BLANK, Fade(GetColor(GuiGetStyle(SLIDER, BASE_COLOR_PRESSED)), guiAlpha));
-    else if (state == STATE_FOCUSED) GuiDrawRectangle(slider, 0, BLANK, Fade(GetColor(GuiGetStyle(SLIDER, TEXT_COLOR_FOCUSED)), guiAlpha));
-
-    // Draw top/bottom text if provided
-    if (textTop != NULL)
-    {
-        Rectangle textBounds = { 0 };
-        textBounds.width = (float)GetTextWidth(textTop);
-        textBounds.height = (float)GuiGetStyle(DEFAULT, TEXT_SIZE);
-        textBounds.x = bounds.x + bounds.width/2 - textBounds.width/2;
-        textBounds.y = bounds.y - textBounds.height - GuiGetStyle(SLIDER, TEXT_PADDING);
-
-        GuiDrawText(textTop, textBounds, TEXT_ALIGN_RIGHT, Fade(GetColor(GuiGetStyle(SLIDER, TEXT + (state*3))), guiAlpha));
-    }
-
-    if (textBottom != NULL)
-    {
-        Rectangle textBounds = { 0 };
-        textBounds.width = (float)GetTextWidth(textBottom);
-        textBounds.height = (float)GuiGetStyle(DEFAULT, TEXT_SIZE);
-        textBounds.x = bounds.x + bounds.width/2 - textBounds.width/2;
-        textBounds.y = bounds.y + bounds.height + GuiGetStyle(SLIDER, TEXT_PADDING);
-
-        GuiDrawText(textBottom, textBounds, TEXT_ALIGN_LEFT, Fade(GetColor(GuiGetStyle(SLIDER, TEXT + (state*3))), guiAlpha));
-    }
-    //--------------------------------------------------------------------
-
-    return value;
-}
-
-float GuiVerticalSlider(Rectangle bounds, const char *textTop, const char *textBottom, float value, float minValue, float maxValue)
-{
-    return GuiVerticalSliderPro(bounds, textTop, textBottom, value, minValue, maxValue, GuiGetStyle(SLIDER, SLIDER_WIDTH));
-}
-
-float GuiVerticalSliderBar(Rectangle bounds, const char *textTop, const char *textBottom, float value, float minValue, float maxValue)
-{
-    return GuiVerticalSliderPro(bounds, textTop, textBottom, value, minValue, maxValue, 0);
-}
-
-bool GuiSliderProOwning(Rectangle bounds, const char *textLeft, const char *textRight, float *value, float minValue, float maxValue, int sliderWidth, bool editMode)
-{
-    GuiState state = (GuiState)GuiGetState();
-
-    float tempValue = *value;
-    bool pressed = false;
-
-    int sliderValue = (int)(((tempValue - minValue)/(maxValue - minValue))*(bounds.width - 2*GuiGetStyle(SLIDER, BORDER_WIDTH)));
-
-    Rectangle slider = {
-        bounds.x,
-        bounds.y + GuiGetStyle(SLIDER, BORDER_WIDTH) + GuiGetStyle(SLIDER, SLIDER_PADDING),
-        0,
-        bounds.height - 2*GuiGetStyle(SLIDER, BORDER_WIDTH) - 2*GuiGetStyle(SLIDER, SLIDER_PADDING)
-    };
-
-    if (sliderWidth > 0)        // Slider
-    {
-        slider.x += (sliderValue - sliderWidth/2);
-        slider.width = (float)sliderWidth;
-    }
-    else if (sliderWidth == 0)  // SliderBar
-    {
-        slider.x += GuiGetStyle(SLIDER, BORDER_WIDTH);
-        slider.width = (float)sliderValue;
-    }
-
-    // Update control
-    //--------------------------------------------------------------------
-    if ((state != STATE_DISABLED) && (editMode || !guiLocked))
-    {
-        Vector2 mousePoint = GetMousePosition();
-
-        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
-        {
-            if (CheckCollisionPointRec(mousePoint, bounds))
-            {
-                pressed = true;
-            }
-        }
-        else if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON) && editMode)
-        {
-            pressed = true;
-        }
-        if (editMode)
-        {
-            state = STATE_PRESSED;
-            tempValue = ((maxValue - minValue)*(mousePoint.x - (float)(bounds.x + sliderWidth/2)))/(float)(bounds.width - sliderWidth) + minValue;
-
-            if (sliderWidth > 0) slider.x = mousePoint.x - slider.width/2;  // Slider
-            else if (sliderWidth == 0) slider.width = (float)sliderValue;          // SliderBar
-
-        }
-        else if (CheckCollisionPointRec(mousePoint, bounds))
-        {
-            state = STATE_FOCUSED;
-        }
-
-        if (tempValue > maxValue) tempValue = maxValue;
-        else if (tempValue < minValue) tempValue = minValue;
-    }
-
-
-    // Bar limits check
-    if (sliderWidth > 0)        // Slider
-    {
-        if (slider.x <= (bounds.x + GuiGetStyle(SLIDER, BORDER_WIDTH))) slider.x = bounds.x + GuiGetStyle(SLIDER, BORDER_WIDTH);
-        else if ((slider.x + slider.width) >= (bounds.x + bounds.width)) slider.x = bounds.x + bounds.width - slider.width - GuiGetStyle(SLIDER, BORDER_WIDTH);
-    }
-    else if (sliderWidth == 0)  // SliderBar
-    {
-        if (slider.width > bounds.width) slider.width = bounds.width - 2*GuiGetStyle(SLIDER, BORDER_WIDTH);
-    }
-
-    //--------------------------------------------------------------------
-    // Draw control
-    //--------------------------------------------------------------------
-    GuiDrawRectangle(bounds, GuiGetStyle(SLIDER, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(SLIDER, BORDER + (state*3))), guiAlpha), Fade(GetColor(GuiGetStyle(SLIDER, (state != STATE_DISABLED)?  BASE_COLOR_NORMAL : BASE_COLOR_DISABLED)), guiAlpha));
-
-    // Draw slider internal bar (depends on state)
-    if ((state == STATE_NORMAL) || (state == STATE_PRESSED))
-        GuiDrawRectangle(slider, 0, BLANK, Fade(GetColor(GuiGetStyle(SLIDER, BASE_COLOR_PRESSED)), guiAlpha));
-    else if (state == STATE_FOCUSED)
-        GuiDrawRectangle(slider, 0, BLANK, Fade(GetColor(GuiGetStyle(SLIDER, TEXT_COLOR_FOCUSED)), guiAlpha));
-
-    // Draw left/right text if provided
-    if (textLeft != NULL)
-    {
-        Rectangle textBounds = { 0 };
-        textBounds.width = (float)GetTextWidth(textLeft);
-        textBounds.height = (float)GuiGetStyle(DEFAULT, TEXT_SIZE);
-        textBounds.x = bounds.x - textBounds.width - GuiGetStyle(SLIDER, TEXT_PADDING);
-        textBounds.y = bounds.y + bounds.height/2 - GuiGetStyle(DEFAULT, TEXT_SIZE)/2;
-
-        GuiDrawText(textLeft, textBounds, TEXT_ALIGN_RIGHT, Fade(GetColor(GuiGetStyle(SLIDER, TEXT + (state*3))), guiAlpha));
-    }
-
-    if (textRight != NULL)
-    {
-        Rectangle textBounds = { 0 };
-        textBounds.width = (float)GetTextWidth(textRight);
-        textBounds.height = (float)GuiGetStyle(DEFAULT, TEXT_SIZE);
-        textBounds.x = bounds.x + bounds.width + GuiGetStyle(SLIDER, TEXT_PADDING);
-        textBounds.y = bounds.y + bounds.height/2 - GuiGetStyle(DEFAULT, TEXT_SIZE)/2;
-
-        GuiDrawText(textRight, textBounds, TEXT_ALIGN_LEFT, Fade(GetColor(GuiGetStyle(SLIDER, TEXT + (state*3))), guiAlpha));
-    }
-    //--------------------------------------------------------------------
-
-    *value = tempValue;
-    return pressed;
-}
-
-bool GuiSliderOwning(Rectangle bounds, const char *textLeft, const char *textRight, float *value, float minValue, float maxValue, bool editMode)
-{
-    return GuiSliderProOwning(bounds, textLeft, textRight, value, minValue, maxValue, GuiGetStyle(SLIDER, SLIDER_WIDTH), editMode);
-}
-
-bool GuiSliderBarOwning(Rectangle bounds, const char *textLeft, const char *textRight, float *value, float minValue, float maxValue, bool editMode)
-{
-    return GuiSliderProOwning(bounds, textLeft, textRight, value, minValue, maxValue, 0, editMode);
-}
-
-bool GuiVerticalSliderProOwning(Rectangle bounds, const char *textTop, const char *textBottom, float *value, float minValue, float maxValue, int sliderHeight, bool editMode)
-{
-    GuiState state = (GuiState)GuiGetState();
-
-    float tempValue = *value;
-    bool pressed = false;
-
-    int sliderValue = (int)(((tempValue - minValue)/(maxValue - minValue)) * (bounds.height - 2 * GuiGetStyle(SLIDER, BORDER_WIDTH)));
-
-    Rectangle slider = {
-        bounds.x + GuiGetStyle(SLIDER, BORDER_WIDTH) + GuiGetStyle(SLIDER, SLIDER_PADDING),
-        bounds.y + bounds.height - sliderValue,
-        bounds.width - 2*GuiGetStyle(SLIDER, BORDER_WIDTH) - 2*GuiGetStyle(SLIDER, SLIDER_PADDING),
-        0.0f,
-    };
-
-    if (sliderHeight > 0)        // Slider
-    {
-        slider.y -= sliderHeight/2;
-        slider.height = (float)sliderHeight;
-    }
-    else if (sliderHeight == 0)  // SliderBar
-    {
-        slider.y -= GuiGetStyle(SLIDER, BORDER_WIDTH);
-        slider.height = (float)sliderValue;
-    }
-    // Update control
-    //--------------------------------------------------------------------
-    if ((state != STATE_DISABLED) && (editMode || !guiLocked))
-    {
-        Vector2 mousePoint = GetMousePosition();
-
-        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
-        {
-            if (CheckCollisionPointRec(mousePoint, bounds))
-            {
-                pressed = true;
-            }
-        }
-        else if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON) && editMode)
-        {
-            pressed = true;
-        }
-        if (editMode)
-        {
-            state = STATE_PRESSED;
-
-            float normalizedValue = (bounds.y + bounds.height - mousePoint.y - (float)(sliderHeight / 2)) / (bounds.height - (float)sliderHeight);
-            tempValue = (maxValue - minValue) * normalizedValue + minValue;
-
-            if (sliderHeight > 0) slider.y = mousePoint.y - slider.height / 2;  // Slider
-            else if (sliderHeight == 0)                                          // SliderBar
-            {
-                slider.y = mousePoint.y;
-                slider.height = bounds.y + bounds.height - slider.y - GuiGetStyle(SLIDER, BORDER_WIDTH);
-            }
-        }
-        else if (CheckCollisionPointRec(mousePoint, bounds))
-        {
-            state = STATE_FOCUSED;
-        }
-
-        if (tempValue > maxValue) tempValue = maxValue;
-        else if (tempValue < minValue) tempValue = minValue;
-    }
-
-
-    // Bar limits check
-    if (sliderHeight > 0)        // Slider
-    {
-        if (slider.y < (bounds.y + GuiGetStyle(SLIDER, BORDER_WIDTH))) slider.y = bounds.y + GuiGetStyle(SLIDER, BORDER_WIDTH);
-        else if ((slider.y + slider.height) >= (bounds.y + bounds.height)) slider.y = bounds.y + bounds.height - slider.height - GuiGetStyle(SLIDER, BORDER_WIDTH);
-    }
-    else if (sliderHeight == 0)  // SliderBar
-    {
-        if (slider.y < (bounds.y + GuiGetStyle(SLIDER, BORDER_WIDTH)))
-        {
-            slider.y = bounds.y + GuiGetStyle(SLIDER, BORDER_WIDTH);
-            slider.height = bounds.height - 2*GuiGetStyle(SLIDER, BORDER_WIDTH);
-        }
-    }
-
-    //--------------------------------------------------------------------
-    // Draw control
-    //--------------------------------------------------------------------
-    GuiDrawRectangle(bounds, GuiGetStyle(SLIDER, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(SLIDER, BORDER + (state*3))), guiAlpha), Fade(GetColor(GuiGetStyle(SLIDER, (state != STATE_DISABLED)?  BASE_COLOR_NORMAL : BASE_COLOR_DISABLED)), guiAlpha));
-
-    // Draw slider internal bar (depends on state)
-    if ((state == STATE_NORMAL) || (state == STATE_PRESSED))
-        GuiDrawRectangle(slider, 0, BLANK, Fade(GetColor(GuiGetStyle(SLIDER, BASE_COLOR_PRESSED)), guiAlpha));
-    else if (state == STATE_FOCUSED)
-        GuiDrawRectangle(slider, 0, BLANK, Fade(GetColor(GuiGetStyle(SLIDER, TEXT_COLOR_FOCUSED)), guiAlpha));
-
-    // Draw top/bottom text if provided
-    if (textTop != NULL)
-    {
-        Rectangle textBounds = { 0 };
-        textBounds.width = (float)GetTextWidth(textTop);
-        textBounds.height = (float)GuiGetStyle(DEFAULT, TEXT_SIZE);
-        textBounds.x = bounds.x + bounds.width/2 - textBounds.width/2;
-        textBounds.y = bounds.y - textBounds.height - GuiGetStyle(SLIDER, TEXT_PADDING);
-
-        GuiDrawText(textTop, textBounds, TEXT_ALIGN_RIGHT, Fade(GetColor(GuiGetStyle(SLIDER, TEXT + (state*3))), guiAlpha));
-    }
-
-    if (textBottom != NULL)
-    {
-        Rectangle textBounds = { 0 };
-        textBounds.width = (float)GetTextWidth(textBottom);
-        textBounds.height = (float)GuiGetStyle(DEFAULT, TEXT_SIZE);
-        textBounds.x = bounds.x + bounds.width/2 - textBounds.width/2;
-        textBounds.y = bounds.y + bounds.height + GuiGetStyle(SLIDER, TEXT_PADDING);
-
-        GuiDrawText(textBottom, textBounds, TEXT_ALIGN_LEFT, Fade(GetColor(GuiGetStyle(SLIDER, TEXT + (state*3))), guiAlpha));
-    }
-    //--------------------------------------------------------------------
-
-    *value = tempValue;
-    return pressed;
-}
-
-bool GuiVerticalSliderOwning(Rectangle bounds, const char *textTop, const char *textBottom, float *value, float minValue, float maxValue, bool editMode)
-{
-    return GuiVerticalSliderProOwning(bounds, textTop, textBottom, value, minValue, maxValue, GuiGetStyle(SLIDER, SLIDER_WIDTH), editMode);
-}
-
-bool GuiVerticalSliderBarOwning(Rectangle bounds, const char *textTop, const char *textBottom, float *value, float minValue, float maxValue, bool editMode)
-{
-    return GuiVerticalSliderProOwning(bounds, textTop, textBottom, value, minValue, maxValue, 0, editMode);
 }
