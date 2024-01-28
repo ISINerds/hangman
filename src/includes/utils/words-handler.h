@@ -4,14 +4,25 @@
 #include <string.h>
 #include <time.h>
 
+// Define score ranges for difficulty levels
+// #define EASY_LEVEL_LIMIT 10
+#define MEDIUM_LEVEL_LIMIT 20
+#define DIFFICULT_LEVEL_LIMIT 30
+
 typedef struct {
     char ** wordsArray;
     int wordsArraySize;
 } Words;
 
+typedef enum {
+    EASY = 1,
+    MEDIUM = 2,
+    HARD =3,
+} Level;
+
 Words parser(char* path);
 void freeWordsArray(Words words);
-char * randomWord(char * path);
+// char * randomWord(char * path);
 
 Words parser(char* path){
 
@@ -71,11 +82,72 @@ void freeWordsArray(Words words){
     free(words.wordsArray);
 }
 
-char * randomWord(char * path){
-    srand(time(NULL));
-    Words words = parser(path);
-    char * result = (char*) malloc(100*sizeof(char));
-    strcpy(result,words.wordsArray[rand() % words.wordsArraySize]);
-    freeWordsArray(words);
-    return result;
+// char * randomWord(char * path){
+//     srand(time(NULL));
+//     Words words = parser(path);
+//     char * result = (char*) malloc(100*sizeof(char));
+//     strcpy(result,words.wordsArray[rand() % words.wordsArraySize]);
+//     freeWordsArray(words);
+//     return result;
+// }
+
+float evaluateWord(char * word){
+    return 0.0;
+}
+char* randomWord(Words words, Level level){
+    Level* levelWords = (Level*)malloc(words.wordsArraySize * sizeof(Level)); // array of level of each word
+    int easyWordsCpt =0;
+    int mediumWordsCpt = 0;
+    int hardWordsCpt = 0;
+
+    // We will fill an array of level and calculate the number of words of each level
+    for(int i=0; i<words.wordsArraySize ; i++){
+
+        char* word = words.wordsArray[i];
+
+        float scoreWord = evaluateWord(word);
+
+        if(scoreWord<MEDIUM_LEVEL_LIMIT){
+            easyWordsCpt++;
+            levelWords[i] = EASY;
+        }
+        else if(scoreWord < DIFFICULT_LEVEL_LIMIT){
+            mediumWordsCpt++;
+            levelWords[i]= MEDIUM;
+        }
+        else{
+            hardWordsCpt++;
+            levelWords[i]=HARD;
+        }
+    }
+
+    // We will choose a random number between 1 and the numberOfWords of a certain level
+    srand((unsigned int)time(NULL));
+    int randomIndex = -1;
+    if(level == EASY){
+        randomIndex = (rand() % easyWordsCpt) +1;
+    }
+    else if(level == MEDIUM){
+        randomIndex = (rand() % mediumWordsCpt) +1;
+    }
+    else{
+        randomIndex = (rand() % hardWordsCpt) +1;
+    }
+
+
+    // We will choose the word with randomIndex 
+    for(int i=0;i<words.wordsArraySize;i++){
+        // If the level of this word is the same as the level mentionned
+        if(levelWords[i] == level){
+            randomIndex--;
+        }
+        if(randomIndex==0){
+            // the selected word
+            char* word  = (char*)  malloc(100 * sizeof(char));
+            strcpy(word, words.wordsArray[i]);
+            return word;
+        }
+    }
+    exit(EXIT_FAILURE); // In Case No Word was choosen
+
 }
