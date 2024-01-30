@@ -5,9 +5,14 @@
 #include <time.h>
 
 // Define score ranges for difficulty levels
-// #define EASY_LEVEL_LIMIT 10
-#define MEDIUM_LEVEL_LIMIT 20
-#define DIFFICULT_LEVEL_LIMIT 30
+#define EASY_LEVEL_MIN 0
+#define MEDIUM_LEVEL_MIN 10
+#define DIFFICULT_LEVEL_MIN 15
+
+//Define common and rare letters  for the score
+#define COMMON_LETTERS  "eario"
+#define EXTREMLY_RARE_LETTERS "qjzx"
+#define RARE_LETTERS "vkw"
 
 typedef struct {
     char ** wordsArray;
@@ -92,7 +97,24 @@ void freeWordsArray(Words words){
 // }
 
 float evaluateWord(char * word){
-    return 0.0;
+    float score = 0;
+    
+    // first criteria : length of the word
+    score+=(2*strlen(word));
+    // second criteria : vowels are easy : if any vowel exists , decrease 1 from the score 
+    for (int i = 0; i < strlen(COMMON_LETTERS); ++i) {
+        score -= strchr(word, COMMON_LETTERS[i]) ? 2 : 0;
+    }
+
+    // third criteria: hard letters, if any oen of them exists , add 2 or 3 to the score
+    for (int i = 0; i < strlen(RARE_LETTERS); ++i) {
+        score += strchr(word, RARE_LETTERS[i]) ? 2 : 0;
+    }
+    for (int i = 0; i < strlen(EXTREMLY_RARE_LETTERS); ++i) {
+        score += strchr(word, EXTREMLY_RARE_LETTERS[i]) ? 3 : 0;
+    }
+
+    return score;
 }
 char* randomWord(Words words, Level level){
     Level* levelWords = (Level*)malloc(words.wordsArraySize * sizeof(Level)); // array of level of each word
@@ -107,11 +129,11 @@ char* randomWord(Words words, Level level){
 
         float scoreWord = evaluateWord(word);
 
-        if(scoreWord<MEDIUM_LEVEL_LIMIT){
+        if(scoreWord<MEDIUM_LEVEL_MIN){
             easyWordsCpt++;
             levelWords[i] = EASY;
         }
-        else if(scoreWord < DIFFICULT_LEVEL_LIMIT){
+        else if(scoreWord < DIFFICULT_LEVEL_MIN){
             mediumWordsCpt++;
             levelWords[i]= MEDIUM;
         }
@@ -134,7 +156,6 @@ char* randomWord(Words words, Level level){
         randomIndex = (rand() % hardWordsCpt) +1;
     }
 
-
     // We will choose the word with randomIndex 
     for(int i=0;i<words.wordsArraySize;i++){
         // If the level of this word is the same as the level mentionned
@@ -149,5 +170,4 @@ char* randomWord(Words words, Level level){
         }
     }
     exit(EXIT_FAILURE); // In Case No Word was choosen
-
 }
