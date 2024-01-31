@@ -101,7 +101,7 @@ float evaluateWord(char * word){
     
     // first criteria : length of the word
     score+=(2*strlen(word));
-    // second criteria : vowels are easy : if any vowel exists , decrease 1 from the score 
+    // second criteria : common letters are easy : if any one exists , decrease 2 from the score 
     for (int i = 0; i < strlen(COMMON_LETTERS); ++i) {
         score -= strchr(word, COMMON_LETTERS[i]) ? 2 : 0;
     }
@@ -113,7 +113,6 @@ float evaluateWord(char * word){
     for (int i = 0; i < strlen(EXTREMLY_RARE_LETTERS); ++i) {
         score += strchr(word, EXTREMLY_RARE_LETTERS[i]) ? 3 : 0;
     }
-
     return score;
 }
 char* randomWord(Words words, Level level){
