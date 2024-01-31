@@ -182,6 +182,7 @@ int main(void) {
     InitWindow(screenWidth, screenHeight, "Hangman");
     SetTargetFPS(60);
     while (!WindowShouldClose()) {
+      GuiSetStyle(DEFAULT, TEXT_SIZE, h*0.05); // Set the font size to 20
         previewScreen();
     }
     CloseWindow();
