@@ -1,19 +1,8 @@
-/*******************************************************************************************
-*
-*   raylib [models] example - Detect basic 3d collisions (box vs sphere vs box)
-*
-*   Example originally created with raylib 1.3, last time updated with raylib 3.5
-*
-*   Example licensed under an unmodified zlib/libpng license, which is an OSI-certified,
-*   BSD-like license that allows static linking with closed source software
-*
-*   Copyright (c) 2015-2024 Ramon Santamaria (@raysan5)
-*
-********************************************************************************************/
 #define RAYGUI_IMPLEMENTATION
 #include "includes/utils/src/raylib.h"
 #include "includes/utils/src/raygui.h"
 
+// GLOBAL STYLE VARIABLES
 #define textPadding 10
 #define borderRadius 0.1
 #define gap 10
@@ -22,18 +11,57 @@
 
 const int screenWidth = 800;
 const int screenHeight = 450;
+int w, h; //width and height for responsiveness
 
-//width and height for responsiveness
-int w, h;
+// Particles
+#define MAX_PARTICLES 100
+#define PARTICLE_SIZE 5
+#define PARTICLE_SPEED 3
+typedef struct {
+   Vector2 position;
+   Color color;
+   Vector2 speed;
+} Particle;
+Particle particles[MAX_PARTICLES];
+
+// GLOBAL VARIABLES
 bool dropDown1 = false;
 bool dropDown2 = false;
 char* singlePlayerOptions = "Hangman;Guess The Word";
 char* twoPlayersOptions = "Dual Hangman;Sudden Death";
-int selectedOption = 0;
 char* difficultyOptions = "Easy;Medium;Hard";
-int selectedDifficulty = 0;
+
+typedef enum {
+   HANGMAN=0,
+   GUESS_THE_WORD=1,
+   DUAL_HANGMAN=2,
+   SUDDEN_DEATH=3,
+} SELECTED_OPTION;
+SELECTED_OPTION selectedOption;
+
+typedef enum {
+   EASY=0,
+   MEDIUM=1,
+   HARD=2,
+} SELECTED_DIFFICULTY;
+SELECTED_DIFFICULTY selectedDifficulty;
+
+// which page to display
+typedef enum {
+   WELCOME_PAGE=0,
+   SIGNLE_PLAYER_PAGE =1,
+   HANGMAN_PAGE = 2,
+   GUESS_THE_WORD_PAGE = 3,
+   TWO_PLAYER_PAGE = 4,
+   DUAL_HANGMAN_PAGE = 5,
+   SUDDEN_DEATH_PAGE = 6,
+   RANKINGS = 7
+} PAGE_NUMBER;
+PAGE_NUMBER pageNumber = WELCOME_PAGE;
+
 // Define the camera to look into our 3d world
 // Camera camera = { { -5.0f, 10.0f, 10.0f }, { -5.0f, 1.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, 45.0f, 0 };
+
 Camera camera = { { -5.1f, 4.0f, 15.6f }, { -5.9f, 3.6f, -0.1f }, { 0.0f, 1.0f, 0.0f }, 45.0f, 0 };
 // hangman pieces number
 const int piecesNumber = 10;
@@ -41,30 +69,60 @@ int nb = 0;
 // hangman pieces
 Vector3 hangmanPiecesPositions[11] = {{-0.3f, 0.3f, 0.8f}, {-2.0f, 2.7f, 0.9f}, {-1.0f, 5.0f, 0.9f}, {0.0f, 4.5f, 0.9f}, {0.0f, 4.2f, 0.9f}, {0.0f, 3.2f, 0.9f}, {0.5f, 3.2f, 0.9f}, {-0.5f, 3.2f, 0.9f}, {-0.2f, 2.2f, 0.9f}, {0.2f, 2.2f, 0.9f}};
 Vector3 hangmanPiecesSizes[11] = {{4.0f, 0.3f, 2.0f}, {0.2f, 4.5f, 0.2f}, {3.0f, 0.2f, 1.3f}, {0.1f, 0.8f, 0.2f}, {0.5f, 0.6f, 0.7f}, {0.8f, 1.4f, 0.7f}, {0.2f, 1.0f, 0.2f}, {0.2f, 1.0f, 0.2f}, {0.2f, 1.0f, 0.2f}, {0.2f, 1.0f, 0.2f}};
-// which page to display
-int pageNumber = 0;
+
+void initializeParticles(){
+   for (int i = 0; i < MAX_PARTICLES; i++) {
+      particles[i].position.x = GetRandomValue(0, GetScreenWidth());
+      particles[i].position.y = GetRandomValue(0, GetScreenHeight());
+      particles[i].color = (Color){GetRandomValue(50, 255), GetRandomValue(50, 255), GetRandomValue(50, 255), 255};
+      particles[i].speed.x = GetRandomValue(-PARTICLE_SPEED, PARTICLE_SPEED);
+      particles[i].speed.y = GetRandomValue(-PARTICLE_SPEED, PARTICLE_SPEED);
+   }
+}
+void drawParticles(){
+   for (int i = 0; i < MAX_PARTICLES; i++) {
+      particles[i].position.x += particles[i].speed.x;
+      particles[i].position.y += particles[i].speed.y;
+
+      // Bounce particles off the window edges
+      if (particles[i].position.x >= GetScreenWidth() || particles[i].position.x <= 0) {
+         particles[i].speed.x = -particles[i].speed.x;
+      }
+
+      if (particles[i].position.y >= GetScreenHeight() || particles[i].position.y <= 0) {
+         particles[i].speed.y = -particles[i].speed.y;
+      }
+   }
+   for (int i = 0; i < MAX_PARTICLES; i++) {
+      DrawCircleV(particles[i].position, PARTICLE_SIZE, particles[i].color);
+   }
+}
 
 void welcomePage() {
-    int textWidth = MeasureText("Welcome To Hangman Game", w * 0.03);
-    DrawText("Welcome To Hangman Game", w / 2 - textWidth / 2, h * 0.1, w * 0.03, GRAY);
-    if(GuiButton((Rectangle){w / 2 - w * 0.2, h * 0.4 ,w * 0.4, h * 0.1},"1 Player Mode")) {
-        pageNumber = 1;
-    }
-    if(GuiButton((Rectangle){w / 2 - w * 0.2, h * 0.5 + 5 ,w * 0.4, h * 0.1},"2 Player Mode")) {
-        pageNumber = 4;
-    }
-    if(GuiButton((Rectangle){w / 2 - w * 0.2, h * 0.6 + 10 ,w * 0.4, h * 0.1},"Rankings")) {
-        pageNumber = 7;
-    }
+   drawParticles();
+   int textWidth = MeasureText("Welcome To Hangman Game", w * 0.03);
+   DrawText("Welcome To Hangman Game", w / 2 - textWidth / 2, h * 0.1, w * 0.03, GRAY);
+   if(GuiButton((Rectangle){w / 2 - w * 0.2, h * 0.4 ,w * 0.4, h * 0.1},"1 Player Mode")) {
+      pageNumber = SIGNLE_PLAYER_PAGE;
+   }
+   if(GuiButton((Rectangle){w / 2 - w * 0.2, h * 0.5 + 5 ,w * 0.4, h * 0.1},"2 Player Mode")) {
+      pageNumber = TWO_PLAYER_PAGE;
+   }
+   if(GuiButton((Rectangle){w / 2 - w * 0.2, h * 0.6 + 10 ,w * 0.4, h * 0.1},"Rankings")) {
+      pageNumber = RANKINGS;
+   }
 }
 
 void singlePlayerPage() {
+   if(selectedOption!=GUESS_THE_WORD && selectedOption!=HANGMAN){
+      selectedOption = GUESS_THE_WORD; // default value
+   }
     if(GuiButton((Rectangle){w / 2 - w * 0.2, h * 0.6 + 10 ,w * 0.4, h * 0.1},"Start") && !dropDown1 && !dropDown2) {
-        if(selectedOption == 0) {
-            pageNumber = 2;
+        if(selectedOption == HANGMAN) {
+            pageNumber = HANGMAN_PAGE;
         }
         else {
-            pageNumber = 3;
+            pageNumber = GUESS_THE_WORD_PAGE;
         }
     }
     if(!dropDown1 && GuiDropdownBox((Rectangle){w / 2 - w * 0.2, h * 0.5 + 5 ,w * 0.4, h * 0.1}, difficultyOptions, &selectedDifficulty, dropDown2)) {
@@ -83,15 +141,18 @@ void singlePlayerPage() {
 }
 
 void twoPlayersPage() {
+   if(selectedOption!=DUAL_HANGMAN && selectedOption!=SUDDEN_DEATH){
+      selectedOption = DUAL_HANGMAN; // default value
+   }
     if(GuiButton((Rectangle){w / 2 - w * 0.2, h * 0.5 + 5 ,w * 0.4, h * 0.1},"Start") && !dropDown1) {
-        if(selectedOption == 0) {
-            pageNumber = 5;
+        if(selectedOption == DUAL_HANGMAN) {
+            pageNumber = DUAL_HANGMAN_PAGE;
         }
         else {
-            pageNumber = 6;
+            pageNumber = SUDDEN_DEATH_PAGE;
         }
     }
-    if(GuiDropdownBox((Rectangle){w / 2 - w * 0.2, h * 0.4,w * 0.4, h * 0.1}, twoPlayersOptions, &selectedOption, dropDown1)) {
+    if(GuiDropdownBox((Rectangle){w / 2 - w * 0.2, h * 0.4,w * 0.4, h * 0.1}, twoPlayersOptions,  &selectedOption, dropDown1)) {
         dropDown1 = !dropDown1;
     }
 }
@@ -167,11 +228,15 @@ void previewScreen() {
         //     // DrawFPS(10, 10);
         //     hangman();
             switch(pageNumber) {
-                case 0: welcomePage(); break;
-                case 1: singlePlayerPage(); break;
-                case 2: hangman(); break;
-                case 4: twoPlayersPage(); break;
-                case 7: rankingsPage(); break;
+                case WELCOME_PAGE:   welcomePage(); break;
+                case SIGNLE_PLAYER_PAGE:  singlePlayerPage(); break;
+                case HANGMAN_PAGE : hangman(); break;
+                case GUESS_THE_WORD_PAGE :  break;
+                case TWO_PLAYER_PAGE:  twoPlayersPage(); break;
+                case DUAL_HANGMAN_PAGE :  break;
+                case SUDDEN_DEATH_PAGE :  break;
+                case RANKINGS:  rankingsPage(); break;
+                
             }
         EndDrawing();
 
@@ -181,6 +246,7 @@ int main(void) {
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     InitWindow(screenWidth, screenHeight, "Hangman");
     SetTargetFPS(60);
+    initializeParticles();
     while (!WindowShouldClose()) {
       GuiSetStyle(DEFAULT, TEXT_SIZE, h*0.05); // Set the font size to 20
         previewScreen();
