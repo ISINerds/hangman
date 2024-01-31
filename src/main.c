@@ -1,21 +1,5 @@
-/*
-    WELCOME raylib EXAMPLES CONTRIBUTOR!
-
-    This is a basic template to anyone ready to contribute with some code example for the library,
-    here there are some guidelines on how to create an example to be included in raylib
-
-    1. File naming: <module>_<description> - Lower case filename, words separated by underscore,
-       no more than 3-4 words in total to describe the example. <module> referes to the primary
-       raylib module the example is more related with (code, shapes, textures, models, shaders, raudio).
-       i.e: core_input_multitouch, shapes_lines_bezier, shaders_palette_switch
-
-    2. Follow below template structure, example info should list the module, the short description
-       and the author of the example, twitter or github info could be also provided for the author.
-       Short description should also be used on the title of the window.
-
-    3. Code should be organized by sections:[Initialization]- [Update] - [Draw] - [De-Initialization]
-       Place your code between the dotted lines for every section, please don't mix update logic with drawing
-       and remember to unload all loaded resources.
+#include "./includes/utils/words-handler.h"
+int main(){
 
     4. Code should follow raylib conventions: https://github.com/raysan5/raylib/wiki/raylib-coding-conventions
        Try to be very organized, using line-breaks appropiately.
