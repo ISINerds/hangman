@@ -12,7 +12,8 @@
 const int screenWidth = 800;
 const int screenHeight = 450;
 int w, h; //width and height for responsiveness
-
+Image image;
+Texture2D texture;
 // Particles
 #define MAX_PARTICLES 100
 #define PARTICLE_SIZE 5
@@ -37,7 +38,7 @@ typedef enum {
    DUAL_HANGMAN=2,
    SUDDEN_DEATH=3,
 } SELECTED_OPTION;
-SELECTED_OPTION selectedOption;
+SELECTED_OPTION selectedOption = 0;
 
 typedef enum {
    EASY=0,
@@ -114,10 +115,13 @@ void welcomePage() {
 }
 
 void singlePlayerPage() {
-   if(selectedOption!=GUESS_THE_WORD && selectedOption!=HANGMAN){
-      selectedOption = GUESS_THE_WORD; // default value
-   }
-    if(GuiButton((Rectangle){w / 2 - w * 0.2, h * 0.6 + 10 ,w * 0.4, h * 0.1},"Start") && !dropDown1 && !dropDown2) {
+//    if(selectedOption!=GUESS_THE_WORD && selectedOption!=HANGMAN){
+//       selectedOption = GUESS_THE_WORD; // default value
+//    }
+   if(GuiButton((Rectangle){w / 2 - w * 0.2, h * 0.6 + 15 ,w * 0.4, h * 0.1},"Back") && !dropDown1 && !dropDown2) {
+        pageNumber = WELCOME_PAGE;
+    }
+    if(GuiButton((Rectangle){w / 2 - w * 0.2, h * 0.5 + 10 ,w * 0.4, h * 0.1},"Start") && !dropDown1 && !dropDown2) {
         if(selectedOption == HANGMAN) {
             pageNumber = HANGMAN_PAGE;
         }
@@ -125,10 +129,10 @@ void singlePlayerPage() {
             pageNumber = GUESS_THE_WORD_PAGE;
         }
     }
-    if(!dropDown1 && GuiDropdownBox((Rectangle){w / 2 - w * 0.2, h * 0.5 + 5 ,w * 0.4, h * 0.1}, difficultyOptions, &selectedDifficulty, dropDown2)) {
+    if(!dropDown1 && GuiDropdownBox((Rectangle){w / 2 - w * 0.2, h * 0.4 + 5 ,w * 0.4, h * 0.1}, difficultyOptions, &selectedDifficulty, dropDown2)) {
         dropDown2 = !dropDown2;
     }
-    if(GuiDropdownBox((Rectangle){w / 2 - w * 0.2, h * 0.4 ,w * 0.4, h * 0.1}, singlePlayerOptions, &selectedOption, dropDown1)) {
+    if(GuiDropdownBox((Rectangle){w / 2 - w * 0.2, h * 0.3 ,w * 0.4, h * 0.1}, singlePlayerOptions, &selectedOption, dropDown1)) {
         dropDown1 = !dropDown1;
         // printf("%d %d\n", selectedOption, dropDown);
     }
@@ -141,28 +145,82 @@ void singlePlayerPage() {
 }
 
 void twoPlayersPage() {
-   if(selectedOption!=DUAL_HANGMAN && selectedOption!=SUDDEN_DEATH){
-      selectedOption = DUAL_HANGMAN; // default value
-   }
-    if(GuiButton((Rectangle){w / 2 - w * 0.2, h * 0.5 + 5 ,w * 0.4, h * 0.1},"Start") && !dropDown1) {
-        if(selectedOption == DUAL_HANGMAN) {
+//    if(selectedOption!=DUAL_HANGMAN && selectedOption!=SUDDEN_DEATH){
+//       selectedOption = DUAL_HANGMAN; // default value
+//    }
+//    if(selectedOption > 1) selectedOption -= 2;
+   if(GuiButton((Rectangle){w / 2 - w * 0.2, h * 0.55 + 10 ,w * 0.4, h * 0.1},"Back") && !dropDown1 && !dropDown2) {
+        pageNumber = WELCOME_PAGE;
+    }
+    if(GuiButton((Rectangle){w / 2 - w * 0.2, h * 0.45 + 5 ,w * 0.4, h * 0.1},"Start") && !dropDown1) {
+        if(selectedOption == HANGMAN) {
             pageNumber = DUAL_HANGMAN_PAGE;
         }
         else {
             pageNumber = SUDDEN_DEATH_PAGE;
         }
     }
-    if(GuiDropdownBox((Rectangle){w / 2 - w * 0.2, h * 0.4,w * 0.4, h * 0.1}, twoPlayersOptions,  &selectedOption, dropDown1)) {
+    if(GuiDropdownBox((Rectangle){w / 2 - w * 0.2, h * 0.35,w * 0.4, h * 0.1}, twoPlayersOptions,  &selectedOption, dropDown1)) {
         dropDown1 = !dropDown1;
     }
 }
 
+
+
+// Image button control, returns true when clicked
+bool GuiImageButtonEx(Rectangle bounds, const char *text, Texture2D texture, Rectangle texSource)
+{
+    GuiControl state = guiState;
+    bool clicked = false;
+
+    // Update control
+    //--------------------------------------------------------------------
+    if ((state != STATE_DISABLED) && !guiLocked)
+    {
+        Vector2 mousePoint = GetMousePosition();
+
+        // Check button state
+        if (CheckCollisionPointRec(mousePoint, bounds))
+        {
+            if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) state = STATE_PRESSED;
+            else if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) clicked = true;
+            else state = STATE_FOCUSED;
+        }
+    }
+    //--------------------------------------------------------------------
+
+    // Draw control
+    //--------------------------------------------------------------------
+    GuiDrawRectangle(bounds, GuiGetStyle(BUTTON, BORDER_WIDTH), Fade(GetColor(GuiGetStyle(BUTTON, BORDER + (state*3))), guiAlpha), Fade(GetColor(GuiGetStyle(BUTTON, BASE + (state*3))), guiAlpha));
+
+    GuiDrawText(text, GetTextBounds(BUTTON, bounds), GuiGetStyle(BUTTON, TEXT_ALIGNMENT), Fade(GetColor(GuiGetStyle(BUTTON, TEXT + (state*3))), guiAlpha));
+    if (texture.id > 0) DrawTextureRec(texture, texSource, RAYGUI_CLITERAL(Vector2){ bounds.x + bounds.width/2 - texSource.width/2, bounds.y + bounds.height/2 - texSource.height/2 }, Fade(GetColor(GuiGetStyle(BUTTON, TEXT + (state*3))), guiAlpha));
+    //------------------------------------------------------------------
+
+    return clicked;
+}
+
+// Image button control, returns true when clicked
+bool GuiImageButton(Rectangle bounds, const char *text, Texture2D texture)
+{
+    return GuiImageButtonEx(bounds, text, texture, RAYGUI_CLITERAL(Rectangle){ 0, 0, (float)texture.width, (float)texture.height });
+}
+
 void rankingsPage() {
+    if(GuiImageButton((Rectangle){ 10, 10, w * 0.05, w * 0.05 }, "", texture)) {
+        pageNumber = WELCOME_PAGE;
+    }
+    // if(GuiButton((Rectangle){20, 20 ,w * 0.05, w * 0.05},"")) {
+    //     pageNumber = WELCOME_PAGE;
+    // }
     if(GuiButton((Rectangle){w / 2 - w * 0.2, h * 0.4 ,w * 0.4, h * 0.1},"Not Implemented Yet")) {
     }
 }
 
 void hangman() {
+    if(GuiImageButton((Rectangle){ 10, 10, w * 0.05, w * 0.05 }, "", texture)) {
+        pageNumber = WELCOME_PAGE;
+    }
     if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) nb++;
         nb %= piecesNumber+1;
     
@@ -215,7 +273,29 @@ void hangman() {
         
 }
 
+void guessTheWord() {
+    if(GuiImageButton((Rectangle){ 10, 10, w * 0.05, w * 0.05 }, "", texture)) {
+        pageNumber = WELCOME_PAGE;
+    }
+    if(GuiButton((Rectangle){w / 2 - w * 0.2, h * 0.55 + 10 ,w * 0.4, h * 0.1},"Guess the Word")) {
+    }
+}
 
+void dualHangMan() {
+    if(GuiImageButton((Rectangle){ 10, 10, w * 0.05, w * 0.05 }, "", texture)) {
+        pageNumber = WELCOME_PAGE;
+    }
+    if(GuiButton((Rectangle){w / 2 - w * 0.2, h * 0.55 + 10 ,w * 0.4, h * 0.1},"Dual HangMan")) {
+    }
+}
+
+void suddenDeath() {
+    if(GuiImageButton((Rectangle){ 10, 10, w * 0.05, w * 0.05 }, "", texture)) {
+        pageNumber = WELCOME_PAGE;
+    }
+    if(GuiButton((Rectangle){w / 2 - w * 0.2, h * 0.55 + 10 ,w * 0.4, h * 0.1},"Sudden Death")) {
+    }
+}
 
 void previewScreen() {
     w = GetRenderWidth();
@@ -231,10 +311,10 @@ void previewScreen() {
                 case WELCOME_PAGE:   welcomePage(); break;
                 case SIGNLE_PLAYER_PAGE:  singlePlayerPage(); break;
                 case HANGMAN_PAGE : hangman(); break;
-                case GUESS_THE_WORD_PAGE :  break;
+                case GUESS_THE_WORD_PAGE : guessTheWord(); break;
                 case TWO_PLAYER_PAGE:  twoPlayersPage(); break;
-                case DUAL_HANGMAN_PAGE :  break;
-                case SUDDEN_DEATH_PAGE :  break;
+                case DUAL_HANGMAN_PAGE :  dualHangMan(); break;
+                case SUDDEN_DEATH_PAGE : suddenDeath(); break;
                 case RANKINGS:  rankingsPage(); break;
                 
             }
@@ -247,6 +327,15 @@ int main(void) {
     InitWindow(screenWidth, screenHeight, "Hangman");
     SetTargetFPS(60);
     initializeParticles();
+    // Load image and create texture
+    image = LoadImage("assets/340.png");
+    Color c = GetImageColor(image, 200, 200);
+    // printf("color: %d %d %d", c.r, c.g, c.b);
+    ImageColorReplace(&image, BLACK, LIGHTGRAY);
+    ImageResize(&image, 30, 30);
+    texture = LoadTextureFromImage(image);
+    // Unload image as it's already in texture
+    UnloadImage(image);
     while (!WindowShouldClose()) {
       GuiSetStyle(DEFAULT, TEXT_SIZE, h*0.05); // Set the font size to 20
         previewScreen();
