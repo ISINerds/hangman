@@ -8,10 +8,13 @@
 #define gap 10
 #define padding 5
 #define textSize 30
+#define letterMargin 5
+#define letterSize w * 0.05
 
 const int screenWidth = 800;
 const int screenHeight = 450;
 int w, h; //width and height for responsiveness
+//back arrow on the top left
 Image image;
 Texture2D texture;
 // Particles
@@ -216,6 +219,20 @@ void rankingsPage() {
     if(GuiButton((Rectangle){w / 2 - w * 0.2, h * 0.4 ,w * 0.4, h * 0.1},"Not Implemented Yet")) {
     }
 }
+// function that draws lines under the word the user has to guess
+void initLines(int lettersNumber) {
+    int totalLength = lettersNumber * letterSize + (lettersNumber - 1) * letterMargin;
+    int start = w / 2 - totalLength / 2;
+    for(int i = 0;i<lettersNumber;i++) {
+        DrawRectangle(start + i * (letterSize + letterMargin), h * 0.3, letterSize, 5, GRAY);
+    }
+}
+
+void drawGuessedLetter(char* letter, int position, int lettersNumber) {
+    int totalLength = lettersNumber * letterSize + (lettersNumber - 1) * letterMargin;
+    int start = w / 2 - totalLength / 2;
+    DrawText(letter, start + position * (letterSize + letterMargin) + w * 0.01, h * 0.3 - letterSize, letterSize, DARKGRAY);
+}
 
 void hangman() {
     if(GuiImageButton((Rectangle){ 10, 10, w * 0.05, w * 0.05 }, "", texture)) {
@@ -255,6 +272,106 @@ void hangman() {
     // UpdateCamera(&camera, CAMERA_THIRD_PERSON);
         // UpdateCamera(&camera, CAMERA_ORBITAL);
         
+        char* clicked = "ABCDEFKLMNOPQTUVWZ";
+
+        for(int i=0;i<26;i++) {
+            char str[] = {'A' + i, '\0'};
+            // Use the strchr function to search for the character
+            char* foundChar = strchr(clicked, 'A' + i);
+            bool test = true;
+            // Check if the character was found
+            if (foundChar != NULL) {
+                test = false;
+            }
+            if(i < 10) {
+                if(test) {
+                    if(GuiButton((Rectangle){letterMargin * (4 + i) + letterSize * i, h * 0.5, letterSize, letterSize},str)) {}
+                }
+                else {
+                    DrawRectangle(letterMargin * (4 + i) + letterSize * i, h * 0.5, letterSize, letterSize, GRAY);
+                    DrawText(str, letterMargin * (4 + i) + letterSize * i + letterSize / 2 - MeasureText(str, h * 0.05) / 2, h * 0.5 + letterSize / 4, h * 0.05, LIGHTGRAY);
+                }
+            }
+            else if(i < 20) {
+                if(test) {
+                    if(GuiButton((Rectangle){letterMargin * (4 + i - 10) + letterSize * (i - 10), h * 0.5 + letterMargin + letterSize, letterSize, letterSize},str)) {}
+                }
+                else {
+                    DrawRectangle(letterMargin * (4 + i - 10) + letterSize * (i - 10), h * 0.5 + (letterMargin + letterSize), letterSize, letterSize, GRAY);
+                    DrawText(str, letterMargin * (4 + i - 10) + letterSize * (i - 10) + letterSize / 2 - MeasureText(str, h * 0.05) / 2, h * 0.5 + (letterMargin + letterSize) + letterSize / 4, h * 0.05, LIGHTGRAY);
+                }
+            }
+            else {
+                if(test) {
+                    if(GuiButton((Rectangle){letterMargin * (4 + i - 18) + letterSize * (i - 18), h * 0.5 + (letterMargin + letterSize) * 2, letterSize, letterSize},str)) {}
+                }
+                else {
+                    DrawRectangle(letterMargin * (4 + i - 18) + letterSize * (i - 18), h * 0.5 + (letterMargin + letterSize) * 2, letterSize, letterSize, GRAY);
+                    DrawText(str, letterMargin * (4 + i - 18) + letterSize * (i - 18) + letterSize / 2 - MeasureText(str, h * 0.05) / 2, h * 0.5 + (letterMargin + letterSize) * 2 + letterSize / 4, h * 0.05, LIGHTGRAY);
+                }
+            }
+        }
+
+        // if(GuiButton((Rectangle){letterMargin * 4, h * 0.5, letterSize, letterSize},"A")) {
+        // }
+        // if(GuiButton((Rectangle){letterMargin * 5 + letterSize, h * 0.5, letterSize, letterSize},"B")) {
+        // }
+        // if(GuiButton((Rectangle){letterMargin * 6 + letterSize * 2, h * 0.5, letterSize, letterSize},"C")) {
+        // }
+        // if(GuiButton((Rectangle){letterMargin * 7 + letterSize * 3, h * 0.5, letterSize, letterSize},"D")) {
+        // }
+        // if(GuiButton((Rectangle){letterMargin * 8 + letterSize * 4, h * 0.5, letterSize, letterSize},"E")) {
+        // }
+        // if(GuiButton((Rectangle){letterMargin * 9 + letterSize * 5, h * 0.5, letterSize, letterSize},"F")) {
+        // }
+        // if(GuiButton((Rectangle){letterMargin * 10 + letterSize * 6, h * 0.5, letterSize, letterSize},"G")) {
+        // }
+        // if(GuiButton((Rectangle){letterMargin * 11 + letterSize * 7, h * 0.5, letterSize, letterSize},"H")) {
+        // }
+        // if(GuiButton((Rectangle){letterMargin * 12 + letterSize * 8, h * 0.5, letterSize, letterSize},"I")) {
+        // }
+        // if(GuiButton((Rectangle){letterMargin * 13 + letterSize * 9, h * 0.5, letterSize, letterSize},"J")) {
+        // }
+        // if(GuiButton((Rectangle){letterMargin * 4, h * 0.5 + letterMargin + letterSize, letterSize, letterSize},"K")) {
+        // }
+        // if(GuiButton((Rectangle){letterMargin * 5 + letterSize, h * 0.5 + letterMargin + letterSize, letterSize, letterSize},"L")) {
+        // }
+        // if(GuiButton((Rectangle){letterMargin * 6 + letterSize * 2, h * 0.5 + letterMargin + letterSize, letterSize, letterSize},"M")) {
+        // }
+        // if(GuiButton((Rectangle){letterMargin * 7 + letterSize * 3, h * 0.5 + letterMargin + letterSize, letterSize, letterSize},"N")) {
+        // }
+        // if(GuiButton((Rectangle){letterMargin * 8 + letterSize * 4, h * 0.5 + letterMargin + letterSize, letterSize, letterSize},"O")) {
+        // }
+        // if(GuiButton((Rectangle){letterMargin * 9 + letterSize * 5, h * 0.5 + letterMargin + letterSize, letterSize, letterSize},"P")) {
+        // }
+        // if(GuiButton((Rectangle){letterMargin * 10 + letterSize * 6, h * 0.5 + letterMargin + letterSize, letterSize, letterSize},"Q")) {
+        // }
+        // if(GuiButton((Rectangle){letterMargin * 11 + letterSize * 7, h * 0.5 + letterMargin + letterSize, letterSize, letterSize},"R")) {
+        // }
+        // if(GuiButton((Rectangle){letterMargin * 12 + letterSize * 8, h * 0.5 + letterMargin + letterSize, letterSize, letterSize},"S")) {
+        // }
+        // if(GuiButton((Rectangle){letterMargin * 13 + letterSize * 9, h * 0.5 + letterMargin + letterSize, letterSize, letterSize},"T")) {
+        // }
+        // if(GuiButton((Rectangle){letterMargin * 6 + letterSize * 2, h * 0.5 + (letterMargin + letterSize) * 2, letterSize, letterSize},"U")) {
+        // }
+        // if(GuiButton((Rectangle){letterMargin * 7 + letterSize * 3, h * 0.5 + (letterMargin + letterSize) * 2, letterSize, letterSize},"V")) {
+        // }
+        // if(GuiButton((Rectangle){letterMargin * 8 + letterSize * 4, h * 0.5 + (letterMargin + letterSize) * 2, letterSize, letterSize},"W")) {
+        // }
+        // if(GuiButton((Rectangle){letterMargin * 9 + letterSize * 5, h * 0.5 + (letterMargin + letterSize) * 2, letterSize, letterSize},"X")) {
+        // }
+        // if(GuiButton((Rectangle){letterMargin * 10 + letterSize * 6, h * 0.5 + (letterMargin + letterSize) * 2, letterSize, letterSize},"Y")) {
+        // }
+        // if(GuiButton((Rectangle){letterMargin * 11 + letterSize * 7, h * 0.5 + (letterMargin + letterSize) * 2, letterSize, letterSize},"Z")) {
+        // }
+        srand(time(0));
+        int ran = random() % 14;
+        initLines(ran);
+        for(int i=0;i<ran;i++) {
+            int ranChar = random() % 32;
+            char str[2] = {ranChar + 65, '\0'};
+            drawGuessedLetter(str, i, ran);
+        }
         BeginMode3D(camera);
 
         for(int i=0;i<nb;i++) {
