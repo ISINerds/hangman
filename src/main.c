@@ -2,6 +2,9 @@
 #include "includes/utils/src/raylib.h"
 #include "includes/utils/src/raygui.h"
 
+#include "includes/utils/words-handler.h"
+#include "includes/data-structures/dictionary.h"
+
 // GLOBAL STYLE VARIABLES
 #define textPadding 10
 #define borderRadius 0.1
@@ -73,7 +76,12 @@ int nb = 0;
 // hangman pieces
 Vector3 hangmanPiecesPositions[11] = {{-0.3f, 0.3f, 0.8f}, {-2.0f, 2.7f, 0.9f}, {-1.0f, 5.0f, 0.9f}, {0.0f, 4.5f, 0.9f}, {0.0f, 4.2f, 0.9f}, {0.0f, 3.2f, 0.9f}, {0.5f, 3.2f, 0.9f}, {-0.5f, 3.2f, 0.9f}, {-0.2f, 2.2f, 0.9f}, {0.2f, 2.2f, 0.9f}};
 Vector3 hangmanPiecesSizes[11] = {{4.0f, 0.3f, 2.0f}, {0.2f, 4.5f, 0.2f}, {3.0f, 0.2f, 1.3f}, {0.1f, 0.8f, 0.2f}, {0.5f, 0.6f, 0.7f}, {0.8f, 1.4f, 0.7f}, {0.2f, 1.0f, 0.2f}, {0.2f, 1.0f, 0.2f}, {0.2f, 1.0f, 0.2f}, {0.2f, 1.0f, 0.2f}};
-
+char clicked[26] = "__________________________";
+char* wordToGuess = NULL;
+char wordToShow[] = "_________________________________";
+Words words;
+Level level;
+Dictionary* dic = NULL;
 void initializeParticles(){
    for (int i = 0; i < MAX_PARTICLES; i++) {
       particles[i].position.x = GetRandomValue(0, GetScreenWidth());
@@ -126,7 +134,19 @@ void singlePlayerPage() {
     }
     if(GuiButton((Rectangle){w / 2 - w * 0.2, h * 0.5 + 10 ,w * 0.4, h * 0.1},"Start") && !dropDown1 && !dropDown2) {
         if(selectedOption == HANGMAN) {
+            if(wordToGuess != NULL) free(wordToGuess);
+            wordToGuess = NULL;
+            for(int i=0;i<strlen(wordToShow);i++) wordToShow[i] = '_';
+            // wordToShow = "_________________________________";
+            for(int i=0;i<26;i++) clicked[i] = '_';
+            // clicked = "__________________________";
+            nb = 0;
             pageNumber = HANGMAN_PAGE;
+            if(selectedDifficulty == EASY) level = EASYL;
+            else if(selectedDifficulty == MEDIUM) level = MEDIUML;
+            else level = HARDL;
+            wordToGuess = randomWord(words, level);
+            // printf("word to guess: %s\n", wordToGuess);
         }
         else {
             pageNumber = GUESS_THE_WORD_PAGE;
@@ -238,8 +258,8 @@ void hangman() {
     if(GuiImageButton((Rectangle){ 10, 10, w * 0.05, w * 0.05 }, "", texture)) {
         pageNumber = WELCOME_PAGE;
     }
-    if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) nb++;
-        nb %= piecesNumber+1;
+    // if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) nb++;
+    nb %= piecesNumber+1;
     
     if (IsKeyDown(KEY_UP)) camera.position.y +=0.1;
     else if (IsKeyDown(KEY_DOWN)) camera.position.y-=0.1;
@@ -272,7 +292,12 @@ void hangman() {
     // UpdateCamera(&camera, CAMERA_THIRD_PERSON);
         // UpdateCamera(&camera, CAMERA_ORBITAL);
         
-        char* clicked = "ABCDEFKLMNOPQTUVWZ";
+        for(int i=0;i<strlen(wordToGuess);i++) {
+            if(wordToShow[i] != '_') {
+                char str[] = {wordToShow[i], '\0'};
+                drawGuessedLetter(str, i, strlen(wordToGuess));
+            }
+        }
 
         for(int i=0;i<26;i++) {
             char str[] = {'A' + i, '\0'};
@@ -285,7 +310,32 @@ void hangman() {
             }
             if(i < 10) {
                 if(test) {
-                    if(GuiButton((Rectangle){letterMargin * (4 + i) + letterSize * i, h * 0.5, letterSize, letterSize},str)) {}
+                    if(GuiButton((Rectangle){letterMargin * (4 + i) + letterSize * i, h * 0.5, letterSize, letterSize},str)) {
+                        clicked[i] = 'A' + i;
+                        // printf("clicked: %s\n", clicked);
+                        // printf("wordtoguess: %s\n", wordToGuess);
+                        // printf("wordtoshow: %s\n", wordToShow);
+                        int * letterPositionsInWordToGuess = searchLetter(dic, wordToGuess, 'a' + i);
+                        // for(int i=0;i < strlen(wordToGuess);i++) {
+                            // printf("%d ", letterPositionsInWordToGuess[i]);
+                            // drawGuessedLetter(str, letterPositionsInWordToGuess[i], strlen(wordToGuess));
+                        // }
+                        // printf("\n");
+                        if(letterPositionsInWordToGuess == NULL || letterPositionsInWordToGuess[0] == -1) {
+                            //draw hangman
+                            nb++;
+                            if(letterPositionsInWordToGuess != NULL) free(letterPositionsInWordToGuess);
+                        }
+                        else {
+                            for(int j=0;j < strlen(wordToGuess)&&letterPositionsInWordToGuess[j]!=-1;j++) {
+                                // printf("%d %d\n", j, letterPositionsInWordToGuess[j]);
+                                // drawGuessedLetter(str, letterPositionsInWordToGuess[i], strlen(wordToGuess));
+                                wordToShow[letterPositionsInWordToGuess[j]] = 'A' + i;
+                            }
+                            // printf("\n");
+                            free(letterPositionsInWordToGuess);
+                        }
+                    }
                 }
                 else {
                     DrawRectangle(letterMargin * (4 + i) + letterSize * i, h * 0.5, letterSize, letterSize, GRAY);
@@ -294,7 +344,25 @@ void hangman() {
             }
             else if(i < 20) {
                 if(test) {
-                    if(GuiButton((Rectangle){letterMargin * (4 + i - 10) + letterSize * (i - 10), h * 0.5 + letterMargin + letterSize, letterSize, letterSize},str)) {}
+                    if(GuiButton((Rectangle){letterMargin * (4 + i - 10) + letterSize * (i - 10), h * 0.5 + letterMargin + letterSize, letterSize, letterSize},str)) {
+                        clicked[i] = 'A' + i;
+                        // printf("clicked: %s\n", clicked);
+                        int * letterPositionsInWordToGuess = searchLetter(dic, wordToGuess, 'a' + i);
+                        if(letterPositionsInWordToGuess == NULL || letterPositionsInWordToGuess[0] == -1) {
+                            //draw hangman
+                            nb++;
+                            if(letterPositionsInWordToGuess != NULL) free(letterPositionsInWordToGuess);
+                        }
+                        else {
+                            for(int j=0;j < strlen(wordToGuess)&&letterPositionsInWordToGuess[j]!=-1;j++) {
+                                // printf("%d %d\n", j, letterPositionsInWordToGuess[j]);
+                                // drawGuessedLetter(str, letterPositionsInWordToGuess[i], strlen(wordToGuess));
+                                wordToShow[letterPositionsInWordToGuess[j]] = 'A' + i;
+                            }
+                            // printf("\n");
+                            free(letterPositionsInWordToGuess);
+                        }
+                    }
                 }
                 else {
                     DrawRectangle(letterMargin * (4 + i - 10) + letterSize * (i - 10), h * 0.5 + (letterMargin + letterSize), letterSize, letterSize, GRAY);
@@ -303,7 +371,25 @@ void hangman() {
             }
             else {
                 if(test) {
-                    if(GuiButton((Rectangle){letterMargin * (4 + i - 18) + letterSize * (i - 18), h * 0.5 + (letterMargin + letterSize) * 2, letterSize, letterSize},str)) {}
+                    if(GuiButton((Rectangle){letterMargin * (4 + i - 18) + letterSize * (i - 18), h * 0.5 + (letterMargin + letterSize) * 2, letterSize, letterSize},str)) {
+                        clicked[i] = 'A' + i;
+                        // printf("clicked: %s\n", clicked);
+                        int * letterPositionsInWordToGuess = searchLetter(dic, wordToGuess, 'a' + i);
+                        if(letterPositionsInWordToGuess == NULL || letterPositionsInWordToGuess[0] == -1) {
+                            //draw hangman
+                            nb++;
+                            if(letterPositionsInWordToGuess != NULL) free(letterPositionsInWordToGuess);
+                        }
+                        else {
+                            for(int j=0;j < strlen(wordToGuess)&&letterPositionsInWordToGuess[j]!=-1;j++) {
+                                // printf("%d %d\n", j, letterPositionsInWordToGuess[j]);
+                                // drawGuessedLetter(str, letterPositionsInWordToGuess[i], strlen(wordToGuess));
+                                wordToShow[letterPositionsInWordToGuess[j]] = 'A' + i;
+                            }
+                            // printf("\n");
+                            free(letterPositionsInWordToGuess);
+                        }
+                    }
                 }
                 else {
                     DrawRectangle(letterMargin * (4 + i - 18) + letterSize * (i - 18), h * 0.5 + (letterMargin + letterSize) * 2, letterSize, letterSize, GRAY);
@@ -311,67 +397,13 @@ void hangman() {
                 }
             }
         }
-
-        // if(GuiButton((Rectangle){letterMargin * 4, h * 0.5, letterSize, letterSize},"A")) {
-        // }
-        // if(GuiButton((Rectangle){letterMargin * 5 + letterSize, h * 0.5, letterSize, letterSize},"B")) {
-        // }
-        // if(GuiButton((Rectangle){letterMargin * 6 + letterSize * 2, h * 0.5, letterSize, letterSize},"C")) {
-        // }
-        // if(GuiButton((Rectangle){letterMargin * 7 + letterSize * 3, h * 0.5, letterSize, letterSize},"D")) {
-        // }
-        // if(GuiButton((Rectangle){letterMargin * 8 + letterSize * 4, h * 0.5, letterSize, letterSize},"E")) {
-        // }
-        // if(GuiButton((Rectangle){letterMargin * 9 + letterSize * 5, h * 0.5, letterSize, letterSize},"F")) {
-        // }
-        // if(GuiButton((Rectangle){letterMargin * 10 + letterSize * 6, h * 0.5, letterSize, letterSize},"G")) {
-        // }
-        // if(GuiButton((Rectangle){letterMargin * 11 + letterSize * 7, h * 0.5, letterSize, letterSize},"H")) {
-        // }
-        // if(GuiButton((Rectangle){letterMargin * 12 + letterSize * 8, h * 0.5, letterSize, letterSize},"I")) {
-        // }
-        // if(GuiButton((Rectangle){letterMargin * 13 + letterSize * 9, h * 0.5, letterSize, letterSize},"J")) {
-        // }
-        // if(GuiButton((Rectangle){letterMargin * 4, h * 0.5 + letterMargin + letterSize, letterSize, letterSize},"K")) {
-        // }
-        // if(GuiButton((Rectangle){letterMargin * 5 + letterSize, h * 0.5 + letterMargin + letterSize, letterSize, letterSize},"L")) {
-        // }
-        // if(GuiButton((Rectangle){letterMargin * 6 + letterSize * 2, h * 0.5 + letterMargin + letterSize, letterSize, letterSize},"M")) {
-        // }
-        // if(GuiButton((Rectangle){letterMargin * 7 + letterSize * 3, h * 0.5 + letterMargin + letterSize, letterSize, letterSize},"N")) {
-        // }
-        // if(GuiButton((Rectangle){letterMargin * 8 + letterSize * 4, h * 0.5 + letterMargin + letterSize, letterSize, letterSize},"O")) {
-        // }
-        // if(GuiButton((Rectangle){letterMargin * 9 + letterSize * 5, h * 0.5 + letterMargin + letterSize, letterSize, letterSize},"P")) {
-        // }
-        // if(GuiButton((Rectangle){letterMargin * 10 + letterSize * 6, h * 0.5 + letterMargin + letterSize, letterSize, letterSize},"Q")) {
-        // }
-        // if(GuiButton((Rectangle){letterMargin * 11 + letterSize * 7, h * 0.5 + letterMargin + letterSize, letterSize, letterSize},"R")) {
-        // }
-        // if(GuiButton((Rectangle){letterMargin * 12 + letterSize * 8, h * 0.5 + letterMargin + letterSize, letterSize, letterSize},"S")) {
-        // }
-        // if(GuiButton((Rectangle){letterMargin * 13 + letterSize * 9, h * 0.5 + letterMargin + letterSize, letterSize, letterSize},"T")) {
-        // }
-        // if(GuiButton((Rectangle){letterMargin * 6 + letterSize * 2, h * 0.5 + (letterMargin + letterSize) * 2, letterSize, letterSize},"U")) {
-        // }
-        // if(GuiButton((Rectangle){letterMargin * 7 + letterSize * 3, h * 0.5 + (letterMargin + letterSize) * 2, letterSize, letterSize},"V")) {
-        // }
-        // if(GuiButton((Rectangle){letterMargin * 8 + letterSize * 4, h * 0.5 + (letterMargin + letterSize) * 2, letterSize, letterSize},"W")) {
-        // }
-        // if(GuiButton((Rectangle){letterMargin * 9 + letterSize * 5, h * 0.5 + (letterMargin + letterSize) * 2, letterSize, letterSize},"X")) {
-        // }
-        // if(GuiButton((Rectangle){letterMargin * 10 + letterSize * 6, h * 0.5 + (letterMargin + letterSize) * 2, letterSize, letterSize},"Y")) {
-        // }
-        // if(GuiButton((Rectangle){letterMargin * 11 + letterSize * 7, h * 0.5 + (letterMargin + letterSize) * 2, letterSize, letterSize},"Z")) {
-        // }
         srand(time(0));
-        int ran = random() % 14;
-        initLines(ran);
-        for(int i=0;i<ran;i++) {
-            int ranChar = random() % 32;
-            char str[2] = {ranChar + 65, '\0'};
-            drawGuessedLetter(str, i, ran);
-        }
+        initLines(strlen(wordToGuess));
+        // for(int i=0;i<ran;i++) {
+        //     int ranChar = random() % 32;
+        //     char str[2] = {ranChar + 65, '\0'};
+            // drawGuessedLetter(str, i, ran);
+        // }
         BeginMode3D(camera);
 
         for(int i=0;i<nb;i++) {
@@ -453,6 +485,8 @@ int main(void) {
     texture = LoadTextureFromImage(image);
     // Unload image as it's already in texture
     UnloadImage(image);
+    words = parser("src/words.txt");
+    dic = AddAll(dic, "src/words.txt");
     while (!WindowShouldClose()) {
       GuiSetStyle(DEFAULT, TEXT_SIZE, h*0.05); // Set the font size to 20
         previewScreen();

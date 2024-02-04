@@ -4,14 +4,30 @@
 #include <string.h>
 #include <time.h>
 
+// Define score ranges for difficulty levels
+#define EASY_LEVEL_MIN 0
+#define MEDIUM_LEVEL_MIN 10
+#define DIFFICULT_LEVEL_MIN 15
+
+//Define common and rare letters  for the score
+#define COMMON_LETTERS  "eario"
+#define EXTREMLY_RARE_LETTERS "qjzx"
+#define RARE_LETTERS "vkw"
+
 typedef struct {
     char ** wordsArray;
     int wordsArraySize;
 } Words;
 
+typedef enum {
+    EASYL = 1,
+    MEDIUML = 2,
+    HARDL =3,
+} Level;
+
 Words parser(char* path);
 void freeWordsArray(Words words);
-char * randomWord(char * path);
+// char * randomWord(char * path);
 
 Words parser(char* path){
 
@@ -71,11 +87,86 @@ void freeWordsArray(Words words){
     free(words.wordsArray);
 }
 
-char * randomWord(char * path){
-    srand(time(NULL));
-    Words words = parser(path);
-    char * result = (char*) malloc(100*sizeof(char));
-    strcpy(result,words.wordsArray[rand() % words.wordsArraySize]);
-    freeWordsArray(words);
-    return result;
+// char * randomWord(char * path){
+//     srand(time(NULL));
+//     Words words = parser(path);
+//     char * result = (char*) malloc(100*sizeof(char));
+//     strcpy(result,words.wordsArray[rand() % words.wordsArraySize]);
+//     freeWordsArray(words);
+//     return result;
+// }
+
+float evaluateWord(char * word){
+    float score = 0;
+    
+    // first criteria : length of the word
+    score+=(2*strlen(word));
+    // second criteria : common letters are easy : if any one exists , decrease 2 from the score 
+    for (int i = 0; i < strlen(COMMON_LETTERS); ++i) {
+        score -= strchr(word, COMMON_LETTERS[i]) ? 2 : 0;
+    }
+
+    // third criteria: hard letters, if any oen of them exists , add 2 or 3 to the score
+    for (int i = 0; i < strlen(RARE_LETTERS); ++i) {
+        score += strchr(word, RARE_LETTERS[i]) ? 2 : 0;
+    }
+    for (int i = 0; i < strlen(EXTREMLY_RARE_LETTERS); ++i) {
+        score += strchr(word, EXTREMLY_RARE_LETTERS[i]) ? 3 : 0;
+    }
+    return score;
+}
+char* randomWord(Words words, Level level){
+    Level* levelWords = (Level*)malloc(words.wordsArraySize * sizeof(Level)); // array of level of each word
+    int easyWordsCpt =0;
+    int mediumWordsCpt = 0;
+    int hardWordsCpt = 0;
+
+    // We will fill an array of level and calculate the number of words of each level
+    for(int i=0; i<words.wordsArraySize ; i++){
+
+        char* word = words.wordsArray[i];
+
+        float scoreWord = evaluateWord(word);
+
+        if(scoreWord<MEDIUM_LEVEL_MIN){
+            easyWordsCpt++;
+            levelWords[i] = EASYL;
+        }
+        else if(scoreWord < DIFFICULT_LEVEL_MIN){
+            mediumWordsCpt++;
+            levelWords[i]= MEDIUML;
+        }
+        else{
+            hardWordsCpt++;
+            levelWords[i]=HARDL;
+        }
+    }
+
+    // We will choose a random number between 1 and the numberOfWords of a certain level
+    srand((unsigned int)time(NULL));
+    int randomIndex = -1;
+    if(level == EASYL){
+        randomIndex = (rand() % easyWordsCpt) +1;
+    }
+    else if(level == MEDIUML){
+        randomIndex = (rand() % mediumWordsCpt) +1;
+    }
+    else{
+        randomIndex = (rand() % hardWordsCpt) +1;
+    }
+
+    // We will choose the word with randomIndex 
+    for(int i=0;i<words.wordsArraySize;i++){
+        // If the level of this word is the same as the level mentionned
+        if(levelWords[i] == level){
+            randomIndex--;
+        }
+        if(randomIndex==0){
+            // the selected word
+            char* word  = (char*)  malloc(100 * sizeof(char));
+            strcpy(word, words.wordsArray[i]);
+            return word;
+        }
+    }
+    exit(EXIT_FAILURE); // In Case No Word was choosen
 }
