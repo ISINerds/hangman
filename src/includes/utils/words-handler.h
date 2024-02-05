@@ -20,9 +20,9 @@ typedef struct {
 } Words;
 
 typedef enum {
-    EASYL = 1,
-    MEDIUML = 2,
-    HARDL =3,
+    EASY = 0,
+    MEDIUM = 1,
+    HARD =2,
 } Level;
 
 Words parser(char* path);
@@ -130,25 +130,25 @@ char* randomWord(Words words, Level level){
 
         if(scoreWord<MEDIUM_LEVEL_MIN){
             easyWordsCpt++;
-            levelWords[i] = EASYL;
+            levelWords[i] = EASY;
         }
         else if(scoreWord < DIFFICULT_LEVEL_MIN){
             mediumWordsCpt++;
-            levelWords[i]= MEDIUML;
+            levelWords[i]= MEDIUM;
         }
         else{
             hardWordsCpt++;
-            levelWords[i]=HARDL;
+            levelWords[i]=HARD;
         }
     }
 
     // We will choose a random number between 1 and the numberOfWords of a certain level
     srand((unsigned int)time(NULL));
     int randomIndex = -1;
-    if(level == EASYL){
+    if(level == EASY){
         randomIndex = (rand() % easyWordsCpt) +1;
     }
-    else if(level == MEDIUML){
+    else if(level == MEDIUM){
         randomIndex = (rand() % mediumWordsCpt) +1;
     }
     else{

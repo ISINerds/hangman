@@ -46,12 +46,7 @@ typedef enum {
 } SELECTED_OPTION;
 SELECTED_OPTION selectedOption = 0;
 
-typedef enum {
-   EASY=0,
-   MEDIUM=1,
-   HARD=2,
-} SELECTED_DIFFICULTY;
-SELECTED_DIFFICULTY selectedDifficulty;
+Level selectedDifficulty;
 
 // which page to display
 typedef enum {
@@ -126,6 +121,7 @@ void welcomePage() {
 }
 
 void singlePlayerPage() {
+    drawParticles();
 //    if(selectedOption!=GUESS_THE_WORD && selectedOption!=HANGMAN){
 //       selectedOption = GUESS_THE_WORD; // default value
 //    }
@@ -142,9 +138,9 @@ void singlePlayerPage() {
             // clicked = "__________________________";
             nb = 0;
             pageNumber = HANGMAN_PAGE;
-            if(selectedDifficulty == EASY) level = EASYL;
-            else if(selectedDifficulty == MEDIUM) level = MEDIUML;
-            else level = HARDL;
+            if(selectedDifficulty == EASY) level = EASY;
+            else if(selectedDifficulty == MEDIUM) level = MEDIUM;
+            else level = HARD;
             wordToGuess = randomWord(words, level);
             // printf("word to guess: %s\n", wordToGuess);
         }
@@ -168,6 +164,7 @@ void singlePlayerPage() {
 }
 
 void twoPlayersPage() {
+    drawParticles();
 //    if(selectedOption!=DUAL_HANGMAN && selectedOption!=SUDDEN_DEATH){
 //       selectedOption = DUAL_HANGMAN; // default value
 //    }
@@ -261,18 +258,18 @@ void hangman() {
     // if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) nb++;
     nb %= piecesNumber+1;
     
-    if (IsKeyDown(KEY_UP)) camera.position.y +=0.1;
-    else if (IsKeyDown(KEY_DOWN)) camera.position.y-=0.1;
-    else if (IsKeyDown(KEY_RIGHT)) camera.position.z+=0.1;
-    else if (IsKeyDown(KEY_LEFT)) camera.position.z-=0.1;
-    else if (IsKeyDown(KEY_J)) camera.position.x+=0.1;
-    else if (IsKeyDown(KEY_K)) camera.position.x-=0.1;
-    if (IsKeyDown(KEY_W)) camera.target.y +=0.1;
-    else if (IsKeyDown(KEY_S)) camera.target.y-=0.1;
-    else if (IsKeyDown(KEY_D)) camera.target.z+=0.1;
-    else if (IsKeyDown(KEY_A)) camera.target.z-=0.1;
-    else if (IsKeyDown(KEY_R)) camera.target.x+=0.1;
-    else if (IsKeyDown(KEY_T)) camera.target.x-=0.1;
+    // if (IsKeyDown(KEY_UP)) camera.position.y +=0.1;
+    // else if (IsKeyDown(KEY_DOWN)) camera.position.y-=0.1;
+    // else if (IsKeyDown(KEY_RIGHT)) camera.position.z+=0.1;
+    // else if (IsKeyDown(KEY_LEFT)) camera.position.z-=0.1;
+    // else if (IsKeyDown(KEY_J)) camera.position.x+=0.1;
+    // else if (IsKeyDown(KEY_K)) camera.position.x-=0.1;
+    // if (IsKeyDown(KEY_W)) camera.target.y +=0.1;
+    // else if (IsKeyDown(KEY_S)) camera.target.y-=0.1;
+    // else if (IsKeyDown(KEY_D)) camera.target.z+=0.1;
+    // else if (IsKeyDown(KEY_A)) camera.target.z-=0.1;
+    // else if (IsKeyDown(KEY_R)) camera.target.x+=0.1;
+    // else if (IsKeyDown(KEY_T)) camera.target.x-=0.1;
 
     // if (IsKeyDown(KEY_UP)) hangmanPiecesPositions[nb].z+=0.1;
     // else if (IsKeyDown(KEY_DOWN)) hangmanPiecesPositions[nb].z-=0.1;
@@ -304,7 +301,7 @@ void hangman() {
             // Use the strchr function to search for the character
             char* foundChar = strchr(clicked, 'A' + i);
             bool test = true;
-            // Check if the character was found
+            // Check if the character was clicked
             if (foundChar != NULL) {
                 test = false;
             }
@@ -397,7 +394,6 @@ void hangman() {
                 }
             }
         }
-        srand(time(0));
         initLines(strlen(wordToGuess));
         // for(int i=0;i<ran;i++) {
         //     int ranChar = random() % 32;
