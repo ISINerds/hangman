@@ -3,9 +3,12 @@
 #include "includes/utils/src/raygui.h"
 
 #include "includes/utils/words-handler.h"
+#include "includes/utils/rankings-handler.h"
+#include "includes/utils/audio.h"
 #include "includes/utils/particles.h"
+#include "includes/utils/snow.h"
 #include "includes/data-structures/dictionary.h"
-
+#include<ctype.h>
 // --- GLOBAL STYLE VARIABLES
 
 // #define textPadding 10
@@ -25,6 +28,19 @@ Image image;
 Texture2D texture;
 
 Color backgroundColor = (Color){0, 0, 20, 255} ;
+
+// For the LOST and WIN pages 
+float gameResultMessageY = -100.0f;
+
+#define MAX_INPUT_CHARS     9
+char userName[MAX_INPUT_CHARS + 1] = "\0";      // NOTE: One extra space required for null terminator char '\0'
+int letterCount = 0;
+
+Rectangle userNameTextBox;
+bool mouseOnText = false;
+
+int framesCounter = 0;
+
 // --- GLOBAL VARIABLES
 bool dropDown1 = false;
 bool dropDown2 = false;
@@ -49,7 +65,9 @@ typedef enum {
     TWO_PLAYER_PAGE = 4,
     DUAL_HANGMAN_PAGE = 5,
     SUDDEN_DEATH_PAGE = 6,
-    RANKINGS = 7
+    RANKINGS = 7,
+    WIN_PAGE = 8,
+    LOST_PAGE=9,
 } PAGE_NUMBER;
 PAGE_NUMBER pageNumber = WELCOME_PAGE;
 
@@ -75,6 +93,17 @@ Words words;
 Level level;
 Dictionary* dic = NULL;
 
+Sound success;
+Sound fail;
+Sound win;
+Sound lost; 
+Sound backgroundMusic;
+int backgroundMusicStarted = 1; // false
+int lostSound = 0;
+// Variables for timer for the background music
+double startTime;
+double elapsedTime = 0;
+double delayTime = 120.0; // 2 minutes delay ( background music is 2 minutes and 4 seconds)
 void welcomePage() {
     drawParticles();
     int textWidth = MeasureText("Welcome To Hangman Game", w * 0.03);
@@ -220,6 +249,15 @@ void drawGuessedLetter(char* letter, int position, int lettersNumber) {
     DrawText(letter, start + position * (letterSize + letterMargin) + w * 0.01, h * 0.3 - letterSize, letterSize, DARKGRAY);
 }
 
+int checkWord(char * wordToGuess , char * wordToShow){
+
+    for(int i=0 ; i<strlen(wordToGuess);i++){
+        if(tolower(wordToShow[i]) != wordToGuess[i]){
+            return 0; // False
+        }
+    }
+    return 1; // True
+}
 void hangman() {
     if(GuiImageButton((Rectangle){ 10, 10, w * 0.05, w * 0.05 }, "", texture)) {
         pageNumber = WELCOME_PAGE;
@@ -279,7 +317,7 @@ void hangman() {
         }
         if(i < 10) {
             if(test) {
-                if(GuiButton((Rectangle){letterMargin * (4 + i) + letterSize * i, h * 0.5, letterSize, letterSize},str)) {
+                if(GuiButton((Rectangle){letterMargin * (4 + i) + letterSize * i, h * 0.5, letterSize, letterSize},str) || IsKeyPressed(qwertyToAzerty('A'+i))) {
                     clicked[i] = 'A' + i;
                     // printf("clicked: %s\n", clicked);
                     // printf("wordtoguess: %s\n", wordToGuess);
@@ -292,10 +330,12 @@ void hangman() {
                     // printf("\n");
                     if(letterPositionsInWordToGuess == NULL || letterPositionsInWordToGuess[0] == -1) {
                         //draw hangman
+                        playFailSound(fail);
                         nb++;
                         if(letterPositionsInWordToGuess != NULL) free(letterPositionsInWordToGuess);
                     }
                     else {
+                        playSuccessSound(success);
                         for(int j=0;j < strlen(wordToGuess)&&letterPositionsInWordToGuess[j]!=-1;j++) {
                             // printf("%d %d\n", j, letterPositionsInWordToGuess[j]);
                             // drawGuessedLetter(str, letterPositionsInWordToGuess[i], strlen(wordToGuess));
@@ -312,16 +352,19 @@ void hangman() {
         }
         else if(i < 20) {
             if(test) {
-                if(GuiButton((Rectangle){letterMargin * (4 + i - 10) + letterSize * (i - 10), h * 0.5 + letterMargin + letterSize, letterSize, letterSize},str)) {
+                if(GuiButton((Rectangle){letterMargin * (4 + i - 10) + letterSize * (i - 10), h * 0.5 + letterMargin + letterSize, letterSize, letterSize},str)|| IsKeyPressed(qwertyToAzerty('A'+i))) {
                     clicked[i] = 'A' + i;
                     // printf("clicked: %s\n", clicked);
                     int * letterPositionsInWordToGuess = searchLetter(dic, wordToGuess, 'a' + i);
                     if(letterPositionsInWordToGuess == NULL || letterPositionsInWordToGuess[0] == -1) {
                         //draw hangman
+                        playFailSound(fail);
                         nb++;
                         if(letterPositionsInWordToGuess != NULL) free(letterPositionsInWordToGuess);
                     }
                     else {
+                        playSuccessSound(success);
+
                         for(int j=0;j < strlen(wordToGuess)&&letterPositionsInWordToGuess[j]!=-1;j++) {
                             // printf("%d %d\n", j, letterPositionsInWordToGuess[j]);
                             // drawGuessedLetter(str, letterPositionsInWordToGuess[i], strlen(wordToGuess));
@@ -339,16 +382,18 @@ void hangman() {
         }
         else {
             if(test) {
-                if(GuiButton((Rectangle){letterMargin * (4 + i - 18) + letterSize * (i - 18), h * 0.5 + (letterMargin + letterSize) * 2, letterSize, letterSize},str)) {
+                if(GuiButton((Rectangle){letterMargin * (4 + i - 18) + letterSize * (i - 18), h * 0.5 + (letterMargin + letterSize) * 2, letterSize, letterSize},str)|| IsKeyPressed(qwertyToAzerty('A'+i))) {
                     clicked[i] = 'A' + i;
                     // printf("clicked: %s\n", clicked);
                     int * letterPositionsInWordToGuess = searchLetter(dic, wordToGuess, 'a' + i);
                     if(letterPositionsInWordToGuess == NULL || letterPositionsInWordToGuess[0] == -1) {
                         //draw hangman
+                        playFailSound(fail);
                         nb++;
                         if(letterPositionsInWordToGuess != NULL) free(letterPositionsInWordToGuess);
                     }
                     else {
+                        playSuccessSound(success);
                         for(int j=0;j < strlen(wordToGuess)&&letterPositionsInWordToGuess[j]!=-1;j++) {
                             // printf("%d %d\n", j, letterPositionsInWordToGuess[j]);
                             // drawGuessedLetter(str, letterPositionsInWordToGuess[i], strlen(wordToGuess));
@@ -380,11 +425,14 @@ void hangman() {
         EndMode3D();
         // Test if the user still has attempts or not
         if(nb>=piecesNumber){
-            
+            printf("You lost\n");
+            pageNumber = LOST_PAGE;
         }
+        printf("%s",wordToGuess);
         // Test if the user guessed the word (complete the condition)
-        if(nb<piecesNumber){
-
+        if(nb<piecesNumber && checkWord(wordToGuess,wordToShow)){
+            pageNumber = WIN_PAGE;
+            printf("You win\n");
         }
 }
 
@@ -395,7 +443,16 @@ void guessTheWord() {
     if(GuiButton((Rectangle){w / 2 - w * 0.2, h * 0.55 + 10 ,w * 0.4, h * 0.1},"Guess the Word")) {
     }
 }
-
+int qwertyToAzerty(int key){
+    switch (key){
+    case KEY_A:  return KEY_Q;
+    case KEY_Q : return KEY_A;
+    case KEY_SEMICOLON : return KEY_M;
+    case KEY_Z : return KEY_W;
+    case KEY_W : return KEY_Z;
+    default:return key;
+    }
+}
 void dualHangMan() {
     if(GuiImageButton((Rectangle){ 10, 10, w * 0.05, w * 0.05 }, "", texture)) {
         pageNumber = WELCOME_PAGE;
@@ -411,18 +468,121 @@ void suddenDeath() {
     if(GuiButton((Rectangle){w / 2 - w * 0.2, h * 0.55 + 10 ,w * 0.4, h * 0.1},"Sudden Death")) {
     }
 }
+void displayUsernameInput(){
 
-void lost(){
+    userNameTextBox =(Rectangle) { w/2.0f - 100*1.7, h*0.5, 225*1.7, 50 };
+    if (CheckCollisionPointRec(GetMousePosition(), userNameTextBox)) mouseOnText = true;
+    else mouseOnText = false;
 
+    if (mouseOnText){
+            // Set the window's cursor to the I-Beam
+            SetMouseCursor(MOUSE_CURSOR_IBEAM);
+            // Get char pressed (unicode character) on the queue
+            int key = GetCharPressed();
+            // Check if more characters have been pressed on the same frame
+            while (key > 0){
+                // NOTE: Only allow keys in range [32..125]
+                if ((key >= 32) && (key <= 125) && (letterCount < MAX_INPUT_CHARS)){
+                    userName[letterCount] = (char)key;
+                    userName[letterCount+1] = '\0'; // Add null terminator at the end of the string.
+                    letterCount++;
+                }
+                key = GetCharPressed();  // Check next character in the queue
+            }
+            // Remove a letter
+            if (IsKeyPressed(KEY_BACKSPACE)){
+                letterCount--;
+                if (letterCount < 0) letterCount = 0;
+                userName[letterCount] = '\0';
+            }
+        }
+    else SetMouseCursor(MOUSE_CURSOR_DEFAULT);
+
+    if (mouseOnText) framesCounter++;
+    else framesCounter = 0;
+
+
+    DrawText("Enter your username !",  w / 2 - MeasureText("Enter your username !", w*0.03) / 2 , h*0.4, w*0.03, WHITE);
+    DrawRectangleRec(userNameTextBox, WHITE);
+    
+    if (mouseOnText) DrawRectangleLines((int)userNameTextBox.x, (int)userNameTextBox.y, (int)userNameTextBox.width, (int)userNameTextBox.height, BLUE);
+    else DrawRectangleLines((int)userNameTextBox.x, (int)userNameTextBox.y, (int)userNameTextBox.width, (int)userNameTextBox.height, DARKGRAY);
+
+    DrawText(userName, (int)userNameTextBox.x + 5, (int)userNameTextBox.y + 8, 40, GRAY);
+    
+    DrawText(TextFormat("INPUT CHARS: %i/%i", letterCount, MAX_INPUT_CHARS), w / 2 - MeasureText("INPUT CHARS: %i/%i", 20) / 2, h*0.5 + 60, 20, DARKGRAY);
+
+    if (mouseOnText){
+        if (letterCount < MAX_INPUT_CHARS){
+            // Draw blinking underscore char
+            if (((framesCounter/20)%2) == 0) DrawText("_", (int)userNameTextBox.x + 8 + MeasureText(userName, 40), (int)userNameTextBox.y + 12, 40, BLUE);
+        }
+        else DrawText("Press BACKSPACE to delete chars...", w / 2 - MeasureText("Press BACKSPACE to delete chars...", 20) / 2, h*0.5 + 90, 20, GRAY);
+    }
+    if (IsKeyPressed(KEY_ENTER)) {
+        addRanking("src/rankings.txt",userName,evaluateWord(wordToGuess)-nb);
+            // Print the entered name to the console (you can replace this with your desired action)
+            printf("Entered name: %s\n", userName);
+            pageNumber = WELCOME_PAGE;
+            // Intialize variables to 0 or null
+    }
 }
-void win(){
+// Check if any key is pressed
+// NOTE: We limit keys check to keys between 32 (KEY_SPACE) and 126
+// bool IsAnyKeyPressed()
+// {
+//     bool keyPressed = false;
+//     int key = GetKeyPressed();
+
+//     if ((key >= 32) && (key <= 126)) keyPressed = true;
+
+//     return keyPressed;
+// }
+void lostPage(){
+    if(!lostSound){
+    playLostSound(lost);
+    lostSound = 1;
+    }
+    int textWidth = MeasureText(TextFormat("You Lost! The word was: %s ",wordToGuess), w * 0.04) ;
+    DrawText( TextFormat("You Lost! The word was: %s ",wordToGuess), w / 2 - textWidth / 2, h * 0.1, w * 0.04, RED);
+
+    if(GuiButton((Rectangle){w / 2 - w * 0.2, h * 0.4  ,w * 0.4, h * 0.1},"Try again")) {
+        pageNumber = WELCOME_PAGE;
+        lostSound =0;
+    }
+}
+void winPage(){
+    if(gameResultMessageY == -100.0f){
+        playWinSound(win);
+        UnloadSound(win);
+    }
+    drawSnowflaskes(w,h);
+
+        gameResultMessageY += 2.0f;
+        DrawText("Congratulations, You Win!", w / 2 - MeasureText("Congratulations, You Win!", w*0.05) / 2, gameResultMessageY, w*0.05, BLUE);
+        if(gameResultMessageY >h*0.25){
+            gameResultMessageY = h*0.25;
+            displayUsernameInput();
+        }
 
 }
 void previewScreen() {
     w = GetRenderWidth();
     h = GetRenderHeight();
-    ClearBackground(RAYWHITE);
+    ClearBackground(backgroundColor);
     BeginDrawing();
+    // For the first time
+    if(!backgroundMusicStarted){
+        playBackgroundMusic(backgroundMusic);
+        backgroundMusicStarted =1;
+    }
+    elapsedTime = GetTime() - startTime;
+    // Check if the specified delay has passed ( after 2 minutes will restart the audio again)
+    if (elapsedTime >= delayTime){
+        playBackgroundMusic(backgroundMusic);
+        // Reset the start time for the next minute
+        startTime = GetTime();
+    }
 
         // DrawText("Move player with cursors to collide", 220, 40, 20, GRAY);
 
@@ -437,7 +597,8 @@ void previewScreen() {
                 case DUAL_HANGMAN_PAGE :  dualHangMan(); break;
                 case SUDDEN_DEATH_PAGE : suddenDeath(); break;
                 case RANKINGS:  rankingsPage(); break;
-                
+                case WIN_PAGE : winPage() ; break;
+                case LOST_PAGE : lostPage(); break;
             }
         EndDrawing();
 
@@ -459,10 +620,17 @@ int main(void) {
     UnloadImage(image);
     words = parser("src/words.txt");
     dic = AddAll(dic, "src/words.txt");
+    double startTime = GetTime();
+    InitAudioDevice();      // Initialize audio device
     while (!WindowShouldClose()) {
+            initializeSnowflakes();
       GuiSetStyle(DEFAULT, TEXT_SIZE, h*0.05); // Set the font size to 20
         previewScreen();
     }
+    UnloadSound(success);
+    UnloadSound(fail);
+    UnloadSound(backgroundMusic);
+    CloseAudioDevice();
     CloseWindow();
     return 0;
 }

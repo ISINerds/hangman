@@ -14,7 +14,7 @@ typedef struct Rankings{
 } Rankings;
 
 void addRanking(char *path,char* username,float score);
-Rankings parser(char * path);
+Rankings parserRankings(char * path);
 void freePlayersArray(Rankings rankings);
 
 void addRanking(char *path,char* username,float score){
@@ -29,7 +29,7 @@ void addRanking(char *path,char* username,float score){
     fclose(file); 
 }
 
-Rankings parser(char * path){
+Rankings parserRankings(char * path){
     Rankings rankings;
     rankings.numberOfPlayers=0;
     FILE *file = fopen(path, "r");
