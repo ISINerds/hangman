@@ -98,7 +98,7 @@ Sound fail;
 Sound win;
 Sound lost; 
 Sound backgroundMusic;
-int backgroundMusicStarted = 0; // false
+int backgroundMusicStarted = 1; // false
 int lostSound = 0;
 // Variables for timer for the background music
 double startTime;
@@ -317,7 +317,7 @@ void hangman() {
         }
         if(i < 10) {
             if(test) {
-                if(GuiButton((Rectangle){letterMargin * (4 + i) + letterSize * i, h * 0.5, letterSize, letterSize},str)) {
+                if(GuiButton((Rectangle){letterMargin * (4 + i) + letterSize * i, h * 0.5, letterSize, letterSize},str) || IsKeyPressed(qwertyToAzerty('A'+i))) {
                     clicked[i] = 'A' + i;
                     // printf("clicked: %s\n", clicked);
                     // printf("wordtoguess: %s\n", wordToGuess);
@@ -352,7 +352,7 @@ void hangman() {
         }
         else if(i < 20) {
             if(test) {
-                if(GuiButton((Rectangle){letterMargin * (4 + i - 10) + letterSize * (i - 10), h * 0.5 + letterMargin + letterSize, letterSize, letterSize},str)) {
+                if(GuiButton((Rectangle){letterMargin * (4 + i - 10) + letterSize * (i - 10), h * 0.5 + letterMargin + letterSize, letterSize, letterSize},str)|| IsKeyPressed(qwertyToAzerty('A'+i))) {
                     clicked[i] = 'A' + i;
                     // printf("clicked: %s\n", clicked);
                     int * letterPositionsInWordToGuess = searchLetter(dic, wordToGuess, 'a' + i);
@@ -382,7 +382,7 @@ void hangman() {
         }
         else {
             if(test) {
-                if(GuiButton((Rectangle){letterMargin * (4 + i - 18) + letterSize * (i - 18), h * 0.5 + (letterMargin + letterSize) * 2, letterSize, letterSize},str)) {
+                if(GuiButton((Rectangle){letterMargin * (4 + i - 18) + letterSize * (i - 18), h * 0.5 + (letterMargin + letterSize) * 2, letterSize, letterSize},str)|| IsKeyPressed(qwertyToAzerty('A'+i))) {
                     clicked[i] = 'A' + i;
                     // printf("clicked: %s\n", clicked);
                     int * letterPositionsInWordToGuess = searchLetter(dic, wordToGuess, 'a' + i);
@@ -443,7 +443,16 @@ void guessTheWord() {
     if(GuiButton((Rectangle){w / 2 - w * 0.2, h * 0.55 + 10 ,w * 0.4, h * 0.1},"Guess the Word")) {
     }
 }
-
+int qwertyToAzerty(int key){
+    switch (key){
+    case KEY_A:  return KEY_Q;
+    case KEY_Q : return KEY_A;
+    case KEY_SEMICOLON : return KEY_M;
+    case KEY_Z : return KEY_W;
+    case KEY_W : return KEY_Z;
+    default:return key;
+    }
+}
 void dualHangMan() {
     if(GuiImageButton((Rectangle){ 10, 10, w * 0.05, w * 0.05 }, "", texture)) {
         pageNumber = WELCOME_PAGE;
