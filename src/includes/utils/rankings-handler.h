@@ -16,6 +16,7 @@ typedef struct Rankings{
 void addRanking(char *path,char* username,float score);
 Rankings parserRankings(char * path);
 void freePlayersArray(Rankings rankings);
+void sortRankings(Rankings rankings);
 
 void addRanking(char *path,char* username,float score){
     Player player = {username,score};
@@ -86,6 +87,24 @@ Rankings parserRankings(char * path){
     }
     fclose(file);
     return rankings;
+}
+
+void swapPlayers(Player* x, Player* y) {
+    Player tmpPlayer = *x;
+    *x = *y;
+    *y = tmpPlayer;
+}
+
+void sortRankings(Rankings rankings) {
+    for(int i=0;i<rankings.numberOfPlayers;i++) {
+        int idx = i;
+        for(int j=i+1;j<rankings.numberOfPlayers;j++) {
+            if(rankings.players[j].score > rankings.players[idx].score) {
+                idx = j;
+            }
+        }
+        swapPlayers(&rankings.players[i], &rankings.players[idx]);
+    }
 }
 
 void freePlayersArray(Rankings rankings){
