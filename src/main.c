@@ -93,6 +93,8 @@ bool playerOneTurn = true;
 Words words;
 Level level;
 Dictionary* dic = NULL;
+Rankings rankings = {NULL, 0};
+float rankingsScroll = 0;
 
 Sound success;
 Sound fail;
@@ -117,6 +119,9 @@ void welcomePage() {
     }
     if(GuiButton((Rectangle){w / 2 - w * 0.2, h * 0.6 + 10 ,w * 0.4, h * 0.1},"Rankings")) {
         pageNumber = RANKINGS;
+        rankingsScroll = 0;
+        rankings = parserRankings("src/rankings.txt");
+        sortRankings(rankings);
     }
 }
 
@@ -255,8 +260,34 @@ void rankingsPage() {
     // if(GuiButton((Rectangle){20, 20 ,w * 0.05, w * 0.05},"")) {
     //     pageNumber = WELCOME_PAGE;
     // }
-    if(GuiButton((Rectangle){w / 2 - w * 0.2, h * 0.4 ,w * 0.4, h * 0.1},"Not Implemented Yet")) {
+    Rectangle boundry = {w / 4, h * 0.15, w / 2, h * 0.8};
+    if(CheckCollisionPointRec(GetMousePosition(), boundry)) {
+        if(GetMouseWheelMove()){
+            rankingsScroll += 5 * GetMouseWheelMove() * boundry.width * GetFrameTime();
+        }
     }
+    rankingsScroll = fmin(0, rankingsScroll);
+    rankingsScroll = fmax(-(h * 0.13 + h * 0.18 + h * 0.075 * rankings.numberOfPlayers - h), rankingsScroll);
+    // printf("scroll %f\n", rankingsScroll);
+    int textWidth = MeasureText("Rankings", w * 0.04);
+    DrawText("Rankings", w / 2 - textWidth / 2, h * 0.05, w * 0.04, GRAY);
+
+    DrawRectangle(w / 4, h * 0.15, w / 2, h * 0.8, GRAY);
+    BeginScissorMode(w / 4, h * 0.15, w / 2, h * 0.8);
+    DrawRectangle(w / 4, h * 0.15 + rankingsScroll, w / 4 - h * 0.0025, h * 0.1, DARKGRAY);
+    DrawRectangle(w / 2 + h * 0.0025, h * 0.15 + rankingsScroll, w / 4 - h * 0.0025, h * 0.1, DARKGRAY);
+    DrawText("Player", 3*w / 8 - MeasureText("Player", w * 0.03) / 2, h * 0.17 + rankingsScroll, w * 0.03, RED);
+    DrawText("Score", 5*w / 8 - MeasureText("Score", w * 0.03) / 2, h * 0.17 + rankingsScroll, w * 0.03, RED);
+    // printf("number of players: %d\n", rankings.numberOfPlayers);
+    for(int i=0;i<rankings.numberOfPlayers;i++) {
+        DrawRectangle(w / 4, h * 0.18 + h * 0.075 * (i+1) + rankingsScroll, w / 4 - h * 0.0025, h * 0.07, DARKGRAY);
+        DrawRectangle(w / 2 + h * 0.0025, h * 0.18 + h * 0.075 * (i+1) + rankingsScroll, w / 4 - h * 0.0025, h * 0.07, DARKGRAY);
+        // DrawText(rankings.players[i].username, 3*w / 8 - MeasureText("Player", w * 0.03) / 2, h * 0.17, w * 0.03, GRAY);
+        DrawText( TextFormat("%s",rankings.players[i].username), 3*w / 8 - MeasureText(TextFormat("%s",rankings.players[i].username), w * 0.03) / 2, h * 0.185 + h * 0.075 * (i+1) + rankingsScroll, w * 0.03, GREEN);
+        DrawText( TextFormat("%.2f",rankings.players[i].score), 5*w / 8 - MeasureText(TextFormat("%.2f",rankings.players[i].score), w * 0.03) / 2, h * 0.185 + h * 0.075 * (i+1) + rankingsScroll, w * 0.03, BLUE);
+        // DrawText("Score", 5*w / 8 - MeasureText("Score", w * 0.03) / 2, h * 0.17, w * 0.03, GRAY);
+    }
+    EndScissorMode();
 }
 // function that draws lines under the word the user has to guess
 void initLines(int lettersNumber) {
