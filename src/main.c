@@ -27,6 +27,7 @@ int w, h; //width and height for responsiveness
 Image image;
 Texture2D texture;
 
+Font font;
 Color backgroundColor = (Color){0, 0, 20, 255} ;
 
 // For the LOST and WIN pages 
@@ -109,15 +110,17 @@ double elapsedTime = 0;
 double delayTime = 120.0; // 2 minutes delay ( background music is 2 minutes and 4 seconds)
 void welcomePage() {
     drawParticles();
-    int textWidth = MeasureText("Welcome To Hangman Game", w * 0.03);
-    DrawText("Welcome To Hangman Game", w / 2 - textWidth / 2, h * 0.1, w * 0.03, GRAY);
+    int textWidth = MeasureText("Welcome To Hangman Game", w * 0.05);
+    // DrawText("Welcome To Hangman Game", w / 2 - textWidth / 2, h * 0.1, w * 0.03, GRAY);
+    DrawTextEx(font,"Welcome To Hangman Game",(Vector2){w / 2 - textWidth / 2, h * 0.1},w*0.05,0,LIGHTGRAY);
+
     if(GuiButton((Rectangle){w / 2 - w * 0.2, h * 0.4 ,w * 0.4, h * 0.1},"1 Player Mode")) {
         pageNumber = SIGNLE_PLAYER_PAGE;
     }
-    if(GuiButton((Rectangle){w / 2 - w * 0.2, h * 0.5 + 5 ,w * 0.4, h * 0.1},"2 Player Mode")) {
+    if(GuiButton((Rectangle){w / 2 - w * 0.2, h * 0.5 + 7 ,w * 0.4, h * 0.1},"2 Player Mode")) {
         pageNumber = TWO_PLAYER_PAGE;
     }
-    if(GuiButton((Rectangle){w / 2 - w * 0.2, h * 0.6 + 10 ,w * 0.4, h * 0.1},"Rankings")) {
+    if(GuiButton((Rectangle){w / 2 - w * 0.2, h * 0.6 + 14 ,w * 0.4, h * 0.1},"Rankings")) {
         pageNumber = RANKINGS;
         rankingsScroll = 0;
         rankings = parserRankings("src/rankings.txt");
@@ -130,6 +133,10 @@ void singlePlayerPage() {
 //    if(selectedOption!=GUESS_THE_WORD && selectedOption!=HANGMAN){
 //       selectedOption = GUESS_THE_WORD; // default value
 //    }
+   Vector2 textWidth = MeasureTextEx(font,"Select The Difficulty Level", w * 0.05,0);
+    // DrawText("Welcome To Hangman Game", w / 2 - textWidth / 2, h * 0.1, w * 0.03, GRAY);
+    DrawTextEx(font,"Select The Difficulty Level",(Vector2){w / 2 - textWidth.x / 2, h * 0.15},w*0.05,0,WHITE);
+
    if(GuiButton((Rectangle){w / 2 - w * 0.2, h * 0.6 + 15 ,w * 0.4, h * 0.1},"Back") && !dropDown1 && !dropDown2) {
         pageNumber = WELCOME_PAGE;
     }
@@ -157,10 +164,10 @@ void singlePlayerPage() {
     if(!dropDown1 && GuiDropdownBox((Rectangle){w / 2 - w * 0.2, h * 0.4 + 5 ,w * 0.4, h * 0.1}, difficultyOptions, &selectedDifficulty, dropDown2)) {
         dropDown2 = !dropDown2;
     }
-    if(GuiDropdownBox((Rectangle){w / 2 - w * 0.2, h * 0.3 ,w * 0.4, h * 0.1}, singlePlayerOptions, &selectedOption, dropDown1)) {
-        dropDown1 = !dropDown1;
-        // printf("%d %d\n", selectedOption, dropDown);
-    }
+    // if(GuiDropdownBox((Rectangle){w / 2 - w * 0.2, h * 0.3 ,w * 0.4, h * 0.1}, singlePlayerOptions, &selectedOption, dropDown1)) {
+    //     dropDown1 = !dropDown1;
+    //     // printf("%d %d\n", selectedOption, dropDown);
+    // }
     // if(GuiButton((Rectangle){w / 2 - w * 0.2, h * 0.4 ,w * 0.4, h * 0.1},"Hangman")) {
     //     pageNumber = 2;
     // }
@@ -270,7 +277,8 @@ void rankingsPage() {
     rankingsScroll = fmax(-(h * 0.13 + h * 0.18 + h * 0.075 * rankings.numberOfPlayers - h), rankingsScroll);
     // printf("scroll %f\n", rankingsScroll);
     int textWidth = MeasureText("Rankings", w * 0.04);
-    DrawText("Rankings", w / 2 - textWidth / 2, h * 0.05, w * 0.04, GRAY);
+    // DrawText("Rankings", w / 2 - textWidth / 2, h * 0.05, w * 0.04, GRAY);
+    DrawTextEx(font,"Rankings",(Vector2){w / 2 - textWidth / 2, h * 0.05},w*0.04,0,GRAY);
 
     DrawRectangle(w / 8, h * 0.15, 3 * w / 4, h * 0.8, GRAY);
     BeginScissorMode(w / 8, h * 0.15, 3 * w / 4, h * 0.8);
@@ -298,7 +306,7 @@ void initLines(int lettersNumber) {
     int totalLength = lettersNumber * letterSize + (lettersNumber - 1) * letterMargin;
     int start = w / 2 - totalLength / 2;
     for(int i = 0;i<lettersNumber;i++) {
-        DrawRectangle(start + i * (letterSize + letterMargin), h * 0.3, letterSize, 5, GRAY);
+        DrawRectangle(start + i * (letterSize + letterMargin), h * 0.3, letterSize, 5, DARKGRAY);
     }
 }
 
@@ -405,7 +413,12 @@ void hangman() {
                 }
             }
             else {
-                DrawRectangle(letterMargin * (4 + i) + letterSize * i, h * 0.5, letterSize, letterSize, GRAY);
+                if(strchr(wordToGuess,'a'+i)!=NULL){
+                    DrawRectangle(letterMargin * (4 + i) + letterSize * i, h * 0.5, letterSize, letterSize, GREEN);
+                }
+                else{
+                    DrawRectangle(letterMargin * (4 + i) + letterSize * i, h * 0.5, letterSize, letterSize, RED);
+                }
                 DrawText(str, letterMargin * (4 + i) + letterSize * i + letterSize / 2 - MeasureText(str, h * 0.05) / 2, h * 0.5 + letterSize / 4, h * 0.05, LIGHTGRAY);
             }
         }
@@ -435,7 +448,12 @@ void hangman() {
                 }
             }
             else {
-                DrawRectangle(letterMargin * (4 + i - 10) + letterSize * (i - 10), h * 0.5 + (letterMargin + letterSize), letterSize, letterSize, GRAY);
+                if(strchr(wordToGuess,'a'+i)!=NULL){
+                    DrawRectangle(letterMargin * (4 + i - 10) + letterSize * (i - 10), h * 0.5 + (letterMargin + letterSize), letterSize, letterSize, GREEN);
+                }
+                else{
+                    DrawRectangle(letterMargin * (4 + i - 10) + letterSize * (i - 10), h * 0.5 + (letterMargin + letterSize), letterSize, letterSize, RED);
+                }
                 DrawText(str, letterMargin * (4 + i - 10) + letterSize * (i - 10) + letterSize / 2 - MeasureText(str, h * 0.05) / 2, h * 0.5 + (letterMargin + letterSize) + letterSize / 4, h * 0.05, LIGHTGRAY);
             }
         }
@@ -464,7 +482,12 @@ void hangman() {
                 }
             }
             else {
-                DrawRectangle(letterMargin * (4 + i - 18) + letterSize * (i - 18), h * 0.5 + (letterMargin + letterSize) * 2, letterSize, letterSize, GRAY);
+                if(strchr(wordToGuess,'a'+i)!=NULL){
+                    DrawRectangle(letterMargin * (4 + i - 18) + letterSize * (i - 18), h * 0.5 + (letterMargin + letterSize) * 2, letterSize, letterSize, GREEN);
+                }
+                else{
+                    DrawRectangle(letterMargin * (4 + i - 18) + letterSize * (i - 18), h * 0.5 + (letterMargin + letterSize) * 2, letterSize, letterSize, RED);
+                }
                 DrawText(str, letterMargin * (4 + i - 18) + letterSize * (i - 18) + letterSize / 2 - MeasureText(str, h * 0.05) / 2, h * 0.5 + (letterMargin + letterSize) * 2 + letterSize / 4, h * 0.05, LIGHTGRAY);
             }
         }
@@ -477,8 +500,8 @@ void hangman() {
         BeginMode3D(camera);
 
         for(int i=0;i<nb;i++) {
-            DrawCube(hangmanPiecesPositions[i], hangmanPiecesSizes[i].x, hangmanPiecesSizes[i].y, hangmanPiecesSizes[i].z, GRAY);
-            DrawCubeWires(hangmanPiecesPositions[i], hangmanPiecesSizes[i].x, hangmanPiecesSizes[i].y, hangmanPiecesSizes[i].z, DARKGRAY);
+            DrawCube(hangmanPiecesPositions[i], hangmanPiecesSizes[i].x, hangmanPiecesSizes[i].y, hangmanPiecesSizes[i].z, LIGHTGRAY);
+            DrawCubeWires(hangmanPiecesPositions[i], hangmanPiecesSizes[i].x, hangmanPiecesSizes[i].y, hangmanPiecesSizes[i].z, BLACK);
         }
         DrawGrid(7, 1);        // Draw a grid
         EndMode3D();
@@ -840,6 +863,13 @@ int main(void) {
     InitWindow(screenWidth, screenHeight, "Hangman");
     SetTargetFPS(60);
     initializeParticles();
+    font = LoadFont("assets/Montserrat-ExtraBold.ttf");
+    GuiSetFont(font);
+    GuiSetStyle(BUTTON, BASE_COLOR_NORMAL, 1);   // Normal state
+    GuiSetStyle(DROPDOWNBOX, BASE_COLOR_NORMAL, 1);   // Normal state
+        GuiSetStyle(DROPDOWNBOX, BASE_COLOR_FOCUSED, 0);   // Normal state
+
+
     // Load image and create texture
     image = LoadImage("assets/340.png");
     Color c = GetImageColor(image, 200, 200);
@@ -852,6 +882,9 @@ int main(void) {
     words = parser("src/words.txt");
     dic = AddAll(dic, "src/words.txt");
     double startTime = GetTime();
+    
+    
+    
     InitAudioDevice();      // Initialize audio device
     while (!WindowShouldClose()) {
             initializeSnowflakes();
