@@ -267,7 +267,7 @@ void rankingsPage() {
     // if(GuiButton((Rectangle){20, 20 ,w * 0.05, w * 0.05},"")) {
     //     pageNumber = WELCOME_PAGE;
     // }
-    Rectangle boundry = {w / 4, h * 0.15, w / 2, h * 0.8};
+    Rectangle boundry = {w / 8, h * 0.15, 3 * w / 4, h * 0.8};
     if(CheckCollisionPointRec(GetMousePosition(), boundry)) {
         if(GetMouseWheelMove()){
             rankingsScroll += 5 * GetMouseWheelMove() * boundry.width * GetFrameTime();
@@ -280,24 +280,23 @@ void rankingsPage() {
     // DrawText("Rankings", w / 2 - textWidth / 2, h * 0.05, w * 0.04, GRAY);
     DrawTextEx(font,"Rankings",(Vector2){w / 2 - textWidth / 2, h * 0.05},w*0.04,0,GRAY);
 
-    // DrawRectangle(w / 4, h * 0.15, w / 2, h * 0.8, GRAY);
-    BeginScissorMode(w / 4, h * 0.15, w / 2, h * 0.8);
-    DrawRectangle(w / 4, h * 0.15 + rankingsScroll, w / 4 - h * 0.0025, h * 0.1, DARKGRAY);
-    DrawRectangle(w / 2 + h * 0.0025, h * 0.15 + rankingsScroll, w / 4 - h * 0.0025, h * 0.1, DARKGRAY);
-    // DrawText("Player", 3*w / 8 - MeasureText("Player", w * 0.03) / 2, h * 0.17 + rankingsScroll, w * 0.03, RED);
-    DrawTextEx(font,"Player", (Vector2) {3*w / 8 - MeasureText("Player", w * 0.03) / 2, h * 0.17 + rankingsScroll}, w * 0.03, 0,RED);
-
-    DrawText("Score", 5*w / 8 - MeasureText("Score", w * 0.03) / 2, h * 0.17 + rankingsScroll, w * 0.03, RED);
+    DrawRectangle(w / 8, h * 0.15, 3 * w / 4, h * 0.8, GRAY);
+    BeginScissorMode(w / 8, h * 0.15, 3 * w / 4, h * 0.8);
+    DrawRectangle(w / 8, h * 0.15 + rankingsScroll, w / 4 - h * 0.0025, h * 0.1, DARKGRAY);
+    DrawRectangle(3*w / 8 + h * 0.0025, h * 0.15 + rankingsScroll, w / 4 - h * 0.0025, h * 0.1, DARKGRAY);
+    DrawRectangle(5*w / 8 + h * 0.0050, h * 0.15 + rankingsScroll, w / 4 - h * 0.0025, h * 0.1, DARKGRAY);
+    DrawText("Player", 2*w / 8 - MeasureText("Player", w * 0.03) / 2, h * 0.17 + rankingsScroll, w * 0.03, RED);
+    DrawText("Score", 4*w / 8 - MeasureText("Score", w * 0.03) / 2, h * 0.17 + rankingsScroll, w * 0.03, RED);
+    DrawText("Rank", 6*w / 8 - MeasureText("Rank", w * 0.03) / 2, h * 0.17 + rankingsScroll, w * 0.03, RED);
     // printf("number of players: %d\n", rankings.numberOfPlayers);
     for(int i=0;i<rankings.numberOfPlayers;i++) {
-        // DrawRectangle(w / 4, h * 0.18 + h * 0.075 * (i+1) + rankingsScroll, w / 4 - h * 0.0025, h * 0.07, (Color){0,0,0,0});
-        // DrawRectangle(w / 2 + h * 0.0025, h * 0.18 + h * 0.075 * (i+1) + rankingsScroll, w / 4 - h * 0.0025, h * 0.07, DARKGRAY);
-        GuiButton((Rectangle){w / 4, h * 0.18 + h * 0.075 * (i+1) + rankingsScroll, w / 4 - h * 0.0025, h * 0.07},rankings.players[i].username);
-        GuiButton((Rectangle){w / 2 + h * 0.0025, h * 0.18 + h * 0.075 * (i+1) + rankingsScroll, w / 4 - h * 0.0025, h * 0.07},TextFormat("%.2f",rankings.players[i].score));
-        
+        DrawRectangle(w / 8, h * 0.18 + h * 0.075 * (i+1) + rankingsScroll, w / 4 - h * 0.0025, h * 0.07, DARKGRAY);
+        DrawRectangle(3*w / 8 + h * 0.0025, h * 0.18 + h * 0.075 * (i+1) + rankingsScroll, w / 4 - h * 0.0025, h * 0.07, DARKGRAY);
+        DrawRectangle(5*w / 8 + h * 0.0050, h * 0.18 + h * 0.075 * (i+1) + rankingsScroll, w / 4 - h * 0.0025, h * 0.07, DARKGRAY);
         // DrawText(rankings.players[i].username, 3*w / 8 - MeasureText("Player", w * 0.03) / 2, h * 0.17, w * 0.03, GRAY);
-        // DrawText( TextFormat("%s",rankings.players[i].username), 3*w / 8 - MeasureText(TextFormat("%s",rankings.players[i].username), w * 0.03) / 2, h * 0.185 + h * 0.075 * (i+1) + rankingsScroll, w * 0.03, GREEN);
-        // DrawText( TextFormat("%.2f",rankings.players[i].score), 5*w / 8 - MeasureText(TextFormat("%.2f",rankings.players[i].score), w * 0.03) / 2, h * 0.185 + h * 0.075 * (i+1) + rankingsScroll, w * 0.03, BLUE);
+        DrawText( TextFormat("%s",rankings.players[i].username), 2*w / 8 - MeasureText(TextFormat("%s",rankings.players[i].username), w * 0.03) / 2, h * 0.185 + h * 0.075 * (i+1) + rankingsScroll, w * 0.03, GREEN);
+        DrawText( TextFormat("%.2f",rankings.players[i].score), 4*w / 8 - MeasureText(TextFormat("%.2f",rankings.players[i].score), w * 0.03) / 2, h * 0.185 + h * 0.075 * (i+1) + rankingsScroll, w * 0.03, BLUE);
+        DrawText( TextFormat("%d", i+1), 6*w / 8 - MeasureText(TextFormat("%d",i+1), w * 0.03) / 2, h * 0.185 + h * 0.075 * (i+1) + rankingsScroll, w * 0.03, GOLD);
         // DrawText("Score", 5*w / 8 - MeasureText("Score", w * 0.03) / 2, h * 0.17, w * 0.03, GRAY);
     }
     EndScissorMode();
