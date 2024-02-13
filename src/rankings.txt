@@ -19,3 +19,4 @@ test;18.00
 test;6.00
 test;-2.00
 tesssssss;6.00
+mehrezbey;2.00

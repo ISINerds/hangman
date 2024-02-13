@@ -1,5 +1,5 @@
 // Particles
-#define MAX_PARTICLES 100
+#define MAX_PARTICLES 150
 #define PARTICLE_SIZE 5
 #define PARTICLE_SPEED 3
 typedef struct {
@@ -17,6 +17,12 @@ void initializeParticles(){
         particles[i].color = (Color){GetRandomValue(50, 255), GetRandomValue(50, 255), GetRandomValue(50, 255), 255};
         particles[i].speed.x = GetRandomValue(-PARTICLE_SPEED, PARTICLE_SPEED);
         particles[i].speed.y = GetRandomValue(-PARTICLE_SPEED, PARTICLE_SPEED);
+        if(particles[i].speed.x == 0){
+            particles[i].speed.x++;
+        }
+        if(particles[i].speed.y == 0){
+            particles[i].speed.y++;
+        }
     }
 }
 void drawParticles(){

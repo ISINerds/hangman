@@ -27,6 +27,7 @@ int w, h; //width and height for responsiveness
 Image image;
 Texture2D texture;
 
+Font font;
 Color backgroundColor = (Color){0, 0, 20, 255} ;
 
 // For the LOST and WIN pages 
@@ -109,8 +110,10 @@ double elapsedTime = 0;
 double delayTime = 120.0; // 2 minutes delay ( background music is 2 minutes and 4 seconds)
 void welcomePage() {
     drawParticles();
-    int textWidth = MeasureText("Welcome To Hangman Game", w * 0.03);
-    DrawText("Welcome To Hangman Game", w / 2 - textWidth / 2, h * 0.1, w * 0.03, GRAY);
+    int textWidth = MeasureText("Welcome To Hangman Game", w * 0.05);
+    // DrawText("Welcome To Hangman Game", w / 2 - textWidth / 2, h * 0.1, w * 0.03, GRAY);
+    DrawTextEx(font,"Welcome To Hangman Game",(Vector2){w / 2 - textWidth / 2, h * 0.1},w*0.05,0,WHITE);
+
     if(GuiButton((Rectangle){w / 2 - w * 0.2, h * 0.4 ,w * 0.4, h * 0.1},"1 Player Mode")) {
         pageNumber = SIGNLE_PLAYER_PAGE;
     }
@@ -157,10 +160,10 @@ void singlePlayerPage() {
     if(!dropDown1 && GuiDropdownBox((Rectangle){w / 2 - w * 0.2, h * 0.4 + 5 ,w * 0.4, h * 0.1}, difficultyOptions, &selectedDifficulty, dropDown2)) {
         dropDown2 = !dropDown2;
     }
-    if(GuiDropdownBox((Rectangle){w / 2 - w * 0.2, h * 0.3 ,w * 0.4, h * 0.1}, singlePlayerOptions, &selectedOption, dropDown1)) {
-        dropDown1 = !dropDown1;
-        // printf("%d %d\n", selectedOption, dropDown);
-    }
+    // if(GuiDropdownBox((Rectangle){w / 2 - w * 0.2, h * 0.3 ,w * 0.4, h * 0.1}, singlePlayerOptions, &selectedOption, dropDown1)) {
+    //     dropDown1 = !dropDown1;
+    //     // printf("%d %d\n", selectedOption, dropDown);
+    // }
     // if(GuiButton((Rectangle){w / 2 - w * 0.2, h * 0.4 ,w * 0.4, h * 0.1},"Hangman")) {
     //     pageNumber = 2;
     // }
@@ -270,13 +273,16 @@ void rankingsPage() {
     rankingsScroll = fmax(-(h * 0.13 + h * 0.18 + h * 0.075 * rankings.numberOfPlayers - h), rankingsScroll);
     // printf("scroll %f\n", rankingsScroll);
     int textWidth = MeasureText("Rankings", w * 0.04);
-    DrawText("Rankings", w / 2 - textWidth / 2, h * 0.05, w * 0.04, GRAY);
+    // DrawText("Rankings", w / 2 - textWidth / 2, h * 0.05, w * 0.04, GRAY);
+    DrawTextEx(font,"Rankings",(Vector2){w / 2 - textWidth / 2, h * 0.05},w*0.04,0,GRAY);
 
     DrawRectangle(w / 4, h * 0.15, w / 2, h * 0.8, GRAY);
     BeginScissorMode(w / 4, h * 0.15, w / 2, h * 0.8);
     DrawRectangle(w / 4, h * 0.15 + rankingsScroll, w / 4 - h * 0.0025, h * 0.1, DARKGRAY);
     DrawRectangle(w / 2 + h * 0.0025, h * 0.15 + rankingsScroll, w / 4 - h * 0.0025, h * 0.1, DARKGRAY);
-    DrawText("Player", 3*w / 8 - MeasureText("Player", w * 0.03) / 2, h * 0.17 + rankingsScroll, w * 0.03, RED);
+    // DrawText("Player", 3*w / 8 - MeasureText("Player", w * 0.03) / 2, h * 0.17 + rankingsScroll, w * 0.03, RED);
+    DrawTextEx(font,"Player", (Vector2) {3*w / 8 - MeasureText("Player", w * 0.03) / 2, h * 0.17 + rankingsScroll}, w * 0.03, 0,RED);
+
     DrawText("Score", 5*w / 8 - MeasureText("Score", w * 0.03) / 2, h * 0.17 + rankingsScroll, w * 0.03, RED);
     // printf("number of players: %d\n", rankings.numberOfPlayers);
     for(int i=0;i<rankings.numberOfPlayers;i++) {
@@ -836,6 +842,9 @@ int main(void) {
     InitWindow(screenWidth, screenHeight, "Hangman");
     SetTargetFPS(60);
     initializeParticles();
+    font = LoadFont("assets/Montserrat-ExtraBold.ttf");
+    GuiSetFont(font);
+
     // Load image and create texture
     image = LoadImage("assets/340.png");
     Color c = GetImageColor(image, 200, 200);
