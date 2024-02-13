@@ -1,0 +1,10 @@
+cat
+elephant
+butterfly
+cheetah
+cow
+chimpanzee
+rabbit
+bear
+peacock
+hippopotamus

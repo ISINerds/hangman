@@ -14,7 +14,7 @@ void displayDictionary(Dictionary* dic);
 Dictionary* AddAll(Dictionary* dictionary, char * path);
 int exists(Dictionary* dictionary, char * word);
 void showAllWords(Dictionary *dic);
-void visualize(Dictionary*  dic, char* path);
+void visualize(Dictionary*  dic);
 int* searchLetter(Dictionary* dic, char* keyword , char letter);
 Dictionary* removeWord(Dictionary *dic, char * word);
 
@@ -127,6 +127,7 @@ void show(Dictionary *dic, char* word, int idx) {
 
 void showAllWords(Dictionary *dic) {
     char* word = (char*) malloc(100 * sizeof(char));
+    for(int i=0;i<100;i++) word[i] = '\0';
     show(dic, word, 0);
     free(word);
 }
@@ -159,17 +160,18 @@ void printDictionary (Dictionary* dic, char* id, int idx, FILE *file ) {
     }
 }
 
-void visualize(Dictionary*  dic, char* path){
+void visualize(Dictionary*  dic){
     // Open a file for writing
-    FILE *file = fopen(path, "w");
+    FILE *file = fopen("graph.dot", "w");
 
     // Check if the file was opened successfully
     if (file == NULL) {
-        printf("ERROR : Could not open the file %s\n", path);
+        printf("ERROR : Could not open the file graph.dot\n");
         exit(EXIT_FAILURE);
     }
 
     char* id = (char*) malloc(100 * sizeof(char));
+    for(int i=0;i<100;i++) id[i] = '\0';
     id[0] = '0';
     // Write to the file
     fprintf(file, "digraph {\n");
@@ -182,7 +184,7 @@ void visualize(Dictionary*  dic, char* path){
 
     //generate the output.svg
     system("dot -Tpng -o output.png graph.dot");
-
+    system("rm graph.dot");
     printf("Data written to the file successfully.\n");
 }
 
