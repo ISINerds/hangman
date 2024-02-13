@@ -1,6 +1,6 @@
 // Particles
-#define MAX_PARTICLES 150
-#define PARTICLE_SIZE 5
+#define MAX_PARTICLES 250
+#define PARTICLE_SIZE 2
 #define PARTICLE_SPEED 3
 typedef struct {
     Vector2 position;
@@ -14,7 +14,7 @@ void initializeParticles(){
     for (int i = 0; i < MAX_PARTICLES; i++) {
         particles[i].position.x = GetRandomValue(0, GetScreenWidth());
         particles[i].position.y = GetRandomValue(0, GetScreenHeight());
-        particles[i].color = (Color){GetRandomValue(50, 255), GetRandomValue(50, 255), GetRandomValue(50, 255), 255};
+        particles[i].color = WHITE;
         particles[i].speed.x = GetRandomValue(-PARTICLE_SPEED, PARTICLE_SPEED);
         particles[i].speed.y = GetRandomValue(-PARTICLE_SPEED, PARTICLE_SPEED);
         if(particles[i].speed.x == 0){
