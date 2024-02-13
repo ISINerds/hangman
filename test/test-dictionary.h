@@ -1,3 +1,4 @@
+#pragma once
 #include "../src/includes/data-structures/dictionary.h"
 #include <time.h>
 
@@ -9,6 +10,8 @@
 #define WORDS_PATH "test/test-words.txt"
 #define GRAPH_PATH "test/test-graph.dot"
 
+int testPassed = 0;
+int testFailed =0;
 
 struct tm* displayCurrentTime(int test){
     time_t currentTime;
@@ -35,10 +38,12 @@ Dictionary* testAddWord(Dictionary* dic, char* word){
     if(testIfWordAdded){
         displayCurrentTime(1);
         printf(" %s The Word '%s' Was Added Successfully!\n"COLOR_RESET,testCase,word);
+        testPassed++;
     }
     else{
         displayCurrentTime(0);
         printf(" %s Could Not Add The word %s To The Dictionary!\n"COLOR_RESET,testCase,word);
+        testFailed++;
     }
     return dic;
 }
@@ -51,10 +56,12 @@ Dictionary* testAddAll(Dictionary* dic){
         int testIfWordAdded = exists(dic,words.wordsArray[i]);
         if(testIfWordAdded){
             displayCurrentTime(1);
+            testPassed++;
             printf(" %s The Word '%s' Was Added Successfully!\n"COLOR_RESET,testCase,words.wordsArray[i]);
         }
         else{
             displayCurrentTime(0);
+            testFailed++;
             printf(" %s Could Not Add The word %s To The Dictionary!\n"COLOR_RESET,testCase,words.wordsArray[i]);
         }
     }
@@ -65,10 +72,12 @@ Dictionary* testExists(Dictionary* dic, char* word){
     const char* testCase = "(TESTING EXISTS)";
     if(exists(dic,word)){
         displayCurrentTime(1);
+        testPassed++;
         printf(" %s The Word '%s' Exists In The Dictionary!\n"COLOR_RESET,testCase,word);
     }
     else{
         displayCurrentTime(0);
+        testFailed++;
         printf(" %s The Word '%s' Does Not Exists In The Dictionary!\n"COLOR_RESET,testCase,word);
     }
     
@@ -80,45 +89,42 @@ void testSearchLetter(Dictionary* dic,char * word,char c,int expectedResult[]){
     const char* testCase = "(TESTING SEARCH LETTER)";
     int * positons = searchLetter(dic,word,c);
     if(positons == NULL){
+        testFailed++;
         displayCurrentTime(0);
         printf(" %s The word '%s' Does Not Exist In The Dictionary!\n"COLOR_RESET,testCase,word);
         return;
     }
     for(int i=0;i<strlen(word);i++){
         if((expectedResult[i]==positons[i]) &&(positons[i]!=-1)){
+            testPassed++;
             displayCurrentTime(1);
             printf(" %s The Letter '%c' Exists In The Word '%s' At The Postion %d!\n"COLOR_RESET,testCase,c,word,positons[i]);
         }
         else if(expectedResult[i]!=positons[i]){
             displayCurrentTime(0);
+            testFailed++;
             if(positons[i]==-1){
                 printf(" %s The Letter '%c' Does Not Exist In The Word '%s' Not At The Postion %d!\n"COLOR_RESET,testCase,c,word,expectedResult[i]);
             }
             else{
                 printf(" %s The Letter '%c' Exists In The Word '%s' At The Postion %d Not At The Postion %d!\n"COLOR_RESET,testCase,c,word,positons[i],expectedResult[i]);
             }
-
         }
 }
-Dictionary* testRemove(Dictionary* dic, char* word){
+}
+Dictionary* testRemove(Dictionary* dic,char *word){
     const char* testCase = "(TESTING REMOVE WORD)";
-    dic = removeWord(dic,word);
-    int testIfWordDeleted = exists(dic,word);
-    if(testIfWordDeleted){
-        displayCurrentTime(0);
-        printf(" %s The Word '%s' Was Not Removed From The Dictionary!\n"COLOR_RESET,testCase,word);
+    dic =  removeWord(dic,word);
+    int test = exists(dic,word);
+    if(!test){
+        displayCurrentTime(1);
+        testPassed++;
+        printf(" %s The Word '%s' Was Removed Successfully From The Dictionary!\n"COLOR_RESET,testCase,word);
     }
     else{
-        displayCurrentTime(1);
-        printf(" %s The Word '%s' Was  Removed From The Dictionary Successfully!\n"COLOR_RESET,testCase,word);
+        displayCurrentTime(0);
+        testFailed++;
+        printf(" %s Could Not Remove The word %s To The Dictionary!\n"COLOR_RESET,testCase,word);
     }
     return dic;
-
-
-}
-
-void testVisualize(Dictionary* dic){
-    visualize(dic);
-}
-
 }
