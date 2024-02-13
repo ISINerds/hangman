@@ -127,6 +127,7 @@ void show(Dictionary *dic, char* word, int idx) {
 
 void showAllWords(Dictionary *dic) {
     char* word = (char*) malloc(100 * sizeof(char));
+    for(int i=0;i<100;i++) word[i] = '\0';
     show(dic, word, 0);
     free(word);
 }
@@ -170,6 +171,7 @@ void visualize(Dictionary*  dic){
     }
 
     char* id = (char*) malloc(100 * sizeof(char));
+    for(int i=0;i<100;i++) id[i] = '\0';
     id[0] = '0';
     // Write to the file
     fprintf(file, "digraph {\n");

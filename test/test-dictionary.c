@@ -24,7 +24,7 @@ displaySeperator("exists(dictionary,word)");
     // b. TEST CASE 2 : TEST WITH AN UNEXISTANT WORD
     //dic = testExists(dic,"blabla"); // TEST SHOULD FAIL
     // C. TEST CASE 3 : TEST WITH AN UNEXISTANT WORD THAT LOOKS SIMILLAR 
-    // dic = testExists(dic,"buterfly"); // TEST SHOULD FAIL
+    //dic = testExists(dic,"buterfly"); // TEST SHOULD FAIL
 
 // 4. TESTING SEARCH LETTER
 displaySeperator("searchLetter(dictionary,word,letter)");
@@ -76,6 +76,7 @@ displaySeperator("removeWord(dictionary,word)");
     while(1){
         if (choice == 'Y' || choice == 'y') {
             visualize(dic);
+                system("wslview  output.png || xdg-open output.png");
             break;
         } else if (choice == 'N' || choice == 'n') {
             break;
