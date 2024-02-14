@@ -136,13 +136,6 @@ void printDictionary (Dictionary* dic, char* id, int idx, FILE *file ) {
     if(!dic) {
         return;
     }
-    // if(dic->swap != dic->next && (!dic->swap || !dic->next)) {
-        // only one of them is null
-        // if(!dic->swap) {
-            // fprintf(file, "null%s [shape=point]\n", id);
-            // fprintf(file, "%s -> null%s \n", id, id);
-        // }
-    // }
     if(dic->value != '\0') fprintf(file, "%s[label=\"%c\"]\n",id, dic->value);
     else fprintf(file, "%s[label=\"\\\\0\"]\n",id);
     if(dic->next) {

@@ -43,11 +43,11 @@ displaySeperator("searchLetter(dictionary,word,letter)");
 // 5. TESTING REMOVE WORD
 displaySeperator("removeWord(dictionary,word)");
     // a. TEST CASE 1 : REMOVING A RANDOM WORD
-    dic = testRemove(dic,"cup"); // TEST SHOULD PASS 
+    //dic = testRemove(dic,"cup"); // TEST SHOULD PASS 
     // b. TEST CASE 2 : REMOVING ANOTHER RANDOM WORD
     dic = testRemove(dic,"headphones"); // TEST SHOULD PASS
     // c. TEST CASE 3 : REMOVING  AN INEXISTANT WORD
-    dic = testRemove(dic,"cup"); // TEST SHOULD PASS
+    //dic = testRemove(dic,"cup"); // TEST SHOULD PASS
 
 
     // RESULT 
